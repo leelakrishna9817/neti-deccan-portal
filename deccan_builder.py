@@ -39,7 +39,7 @@ def convert_file_to_cache_data(uploaded_file):
 st.markdown(
     """
     <div style='text-align: center; margin-bottom: 25px;'>
-        <h1 style='margin: 0; padding: 0; font-size: 56px; font-weight: 800; color: #000000;'>నేటి డెక్కన్</h1>
+        <h1 style='margin: 0; padding: 0; font-size: 56px; font-weight: 800; color: #000000; font-family: sans-serif;'>నేటి డెక్కన్</h1>
         <h3 style='margin: 5px 0 0 0; padding: 0; font-size: 24px; font-weight: 600; color: #555555; letter-spacing: 3px;'>NETI DECCAN</h3>
     </div>
     <hr style='border-top: 3px double #333; margin-bottom: 30px;'>
@@ -132,9 +132,6 @@ if is_admin_url:
 
         headline_input = st.text_input(label="Main Headline (ప్రధాన శీర్షిక):", value=default_headline, key="main_head_form")
         sub_header_input = st.text_input(label="Sub-Header Option (ఉప శీర్షిక - Optional):", value=default_sub_header, key="sub_head_form")
-        
-        # NOTE: STALAM / LOCATION INPUT BOX IS REMOVED ENTIRELY FROM HERE
-        
         body_input = st.text_area(label="News Content (వార్త వివరాలు):", value=default_body, height=200, key="body_txt_form")
         date_input = st.text_input(label="Publish Date (తేదీ):", value=default_date, key="pub_date_form")
 
@@ -221,9 +218,7 @@ if is_admin_url:
             else:
                 st.button("🗑️ Delete Option Unavailable", disabled=True, use_container_width=True, key="disabled_del_btn")
 
-        # ====================================================================
-        # LIVE PREVIEW NOW RE-ADDED DIRECTLY BELOW THE CREATOR PANEL
-        # ====================================================================
+        # Admin View Live Layout Preview Box
         st.markdown("---")
         st.write("### 👀 Live Layout Preview (నిజ సమయ ప్రివ్యూ):")
         with st.container(border=True):
@@ -231,13 +226,10 @@ if is_admin_url:
                 st.markdown(f"## {headline_input}")
             else:
                 st.markdown("## *[Headline Block Blank]*")
-                
             if sub_header_input:
                 st.markdown(f"#### *{sub_header_input}*")
-                
             st.caption(f"📅 తేదీ: {date_input}")
             st.markdown("---")
-            
             col_p_text, col_p_photo = st.columns([0.65, 0.35], gap="large")
             with col_p_text:
                 if body_input:
@@ -247,11 +239,12 @@ if is_admin_url:
             with col_p_photo:
                 if st.session_state['active_image_stream']:
                     st.image(st.session_state['active_image_stream'], caption="ప్రివ్యూ చిత్రం (Preview)", use_container_width=True)
-                else:
-                    st.info("No layout photo added to preview container frame.")
+
+        st.markdown("---")
+        st.caption("📰 **నేటి డెక్కన్ (Neti Deccan) Editor Panel Workspace active**")
 
 # ====================================================================
-# FACE 2: PUBLIC PORTAL NEWS READER (Default Standard Face Viewers Page)
+# FACE 2: PREMIUM PUBLIC PORTAL NEWS READER (The Viewers Face)
 # ====================================================================
 else:
     search_query = st.sidebar.text_input("🔍 వెతకండి (Search articles by keyword):", placeholder="Type keywords here...", key="reader_search_in").strip()
@@ -259,45 +252,71 @@ else:
     st.markdown("### 📰 తాజా వార్తలు (Latest News Updates)")
     st.write("") 
 
-    if all_articles:
-        for headline, file in all_articles.items():
-            if search_query and search_query.lower() not in headline.lower():
-                continue
-                
-            with open(os.path.join(SAVE_FOLDER, file), "r", encoding="utf-8") as f:
-                art = json.load(f)
-                
-            arc_headline = art.get("headline", "Untitled Headline")
-            arc_sub_header = art.get("sub_header", "")
-            arc_content = art.get("content", "")
-            arc_date = art.get("date", "")
-            arc_image = art.get("associated_image", "")
-            
-            with st.container(border=True):
-                st.markdown(f"<h2 style='color:#000000; font-weight:700; margin-bottom:5px;'>{arc_headline}</h2>", unsafe_allow_html=True)
-                if arc_sub_header:
-                    st.markdown(f"<h4 style='color:#444444; font-style:italic; margin-bottom:10px;'>{arc_sub_header}</h4>", unsafe_allow_html=True)
-                st.caption(f"📅 ప్రచురణ: {arc_date}")
-                st.markdown("<hr style='margin: 10px 0; border-top:1px solid #eee;'>", unsafe_allow_html=True)
-                
-                col_text, col_photo = st.columns([0.65, 0.35], gap="large")
-                with col_text:
-                    st.write(arc_content)
-                    
-                with col_photo:
-                    if arc_image and isinstance(arc_image, str) and (arc_image.startswith("http") or arc_image.startswith("data:image")):
-                        st.image(arc_image, use_container_width=True)
-    else:
-        with st.container(border=True):
-            st.markdown("##   సీఎం విజయ్ దళపతితో అరకు ఎంపీ దంపతుల భేటీ")
-            st.caption("📅 తేదీ: September 2, 2026")
-            st.markdown("---")
-            col_t, col_p = st.columns([0.65, 0.35], gap="large")
-            with col_t:
-                st.write("**ఆనందపురం డెక్కన్ న్యూస్ :** పార్లమెంటరీ పట్టణ మరియు అభివృద్ధి అధ్యయన పర్యటనలో భాగంగా తమిళనాడును సందర్శించిన అరకు పార్లమెంట్ సభ్యురాలు (ఎంపీ) దంపతులు ఆ రాష్ట్ర ముఖ్యమంత్రి సి జోసెఫ్ విజయ్ ని మర్యాదపూర్వకంగా కలిశారు. తమిళనాడు సచివాలయంలో జరిగిన ఈ సమావేశంలో అరకు లోయ ప్రాంత అభివృద్దిపై పలు విషయాలు చర్చించారు.")
-            with col_p:
-                st.image("https://unsplash.com", use_container_width=True)
+    # Split the main reader face area into premium side-by-side news column boxes
+    col_main_feed, col_side_recommendations = st.columns([0.72, 0.28], gap="large")
 
-# 9. FOOTER STATUS BAR MONITOR
-st.markdown("---")
-st.caption("📰 **నేటి డెక్కన్ (Neti Deccan) Public News Portal Engine v5.3**")
+    with col_main_feed:
+        if all_articles:
+            for headline, file in all_articles.items():
+                if search_query and search_query.lower() not in headline.lower():
+                    continue
+                    
+                with open(os.path.join(SAVE_FOLDER, file), "r", encoding="utf-8") as f:
+                    art = json.load(f)
+                    
+                arc_headline = art.get("headline", "Untitled Headline")
+                arc_sub_header = art.get("sub_header", "")
+                arc_content = art.get("content", "")
+                arc_date = art.get("date", "")
+                arc_image = art.get("associated_image", "")
+                
+                # Split content dynamically to generate a short preview snippet box string
+                snippet_length = 135
+                news_snippet = arc_content[:snippet_length] + "..." if len(arc_content) > snippet_length else arc_content
+                
+                with st.container(border=True):
+                    st.markdown(f"<h2 style='color:#000000; font-weight:700; margin-top:2px; margin-bottom:5px; font-size:26px;'>{arc_headline}</h2>", unsafe_allow_html=True)
+                    if arc_sub_header:
+                        st.markdown(f"<h4 style='color:#555555; font-style:italic; margin-bottom:8px; font-size:16px;'>{arc_sub_header}</h4>", unsafe_allow_html=True)
+                    st.caption(f"📅 ప్రచురణ: {arc_date}")
+                    st.markdown("<hr style='margin: 8px 0; border-top:1px solid #f2f2f2;'>", unsafe_allow_html=True)
+                    
+                    # Core Layout Grid
+                    col_card_txt, col_card_img = st.columns([0.65, 0.35], gap="medium")
+                    
+                    with col_card_txt:
+                        # Show short snippet text on home view
+                        st.write(news_snippet)
+                        
+                        # "Read More" expandable action drop container
+                        with st.expander("📖 పూర్తి వార్త చదవండి (Read Full Article)"):
+                            st.write(arc_content)
+                            
+                    with col_card_img:
+                        if arc_image and isinstance(arc_image, str) and (arc_image.startswith("http") or arc_image.startswith("data:image")):
+                            st.image(arc_image, use_container_width=True)
+        else:
+            # Baseline Interactive Fallback Card Layout
+            with st.container(border=True):
+                st.markdown("##   సీఎం విజయ్ దళపతితో అరకు ఎంపీ దంపతుల భేటీ")
+                st.caption("📅 తేదీ: September 2, 2026")
+                st.markdown("---")
+                col_t, col_p = st.columns([0.65, 0.35], gap="large")
+                with col_t:
+                    st.write("పార్లమెంటరీ పట్టణ మరియు అభివృద్ధి అధ్యయన పర్యటనలో భాగంగా తమిళనాడును సందర్శించిన అరకు పార్లమెంట్ సభ్యురాలు దంపతులు ఆ రాష్ట్ర ముఖ్యమంత్రిని కలిశారు...")
+                    with st.expander("📖 పూర్తి వార్త చదవండి (Read Full Article)"):
+                        st.write("అరకులోయ డెక్కన్ న్యూస్ : పార్లమెంటరీ పట్టణ మరియు అభివృద్ధి అధ్యయన పర్యటనలో భాగంగా తమిళనాడును సందర్శించిన అరకు పార్లమెంట్ సభ్యురాలు (ఎంపీ) దంపతులు ఆ రాష్ట్ర ముఖ్యమంత్రి సి జోసెఫ్ విజయ్ ని మర్యాదపూర్వకంగా కలిశారు. తమిళనాడు సచివాలయంలో జరిగిన ఈ సమావేశంలో అరకు లోయ ప్రాంత అభివృద్దిపై పలు విషయాలు చర్చించారు.")
+                with col_p:
+                    st.image("https://unsplash.com", use_container_width=True)
+
+    with col_side_recommendations:
+        # Side Column pinned headline list module resembling premium layouts
+        st.markdown("<h4 style='margin-top:0; color:#c00000; border-bottom:2px solid #c00000; padding-bottom:5px;'>🔥 ముఖ్యాంశాలు (Trending Headlines)</h4>", unsafe_allow_html=True)
+        
+        if all_articles:
+            for side_headline, side_file in list(all_articles.items())[:6]: # Restrict view grid depth to top 6 items
+                with st.container(border=False):
+                    st.markdown(f"<p style='font-size:15px; font-weight:600; line-height:1.4; color:#222; margin-bottom:4px;'>📌 {side_headline}</p>", unsafe_allow_html=True)
+                    st.markdown("<div style='border-bottom:1px dashed #ddd; margin-bottom:10px;'></div>", unsafe_allow_html=True)
+        else:
+            st.caption("No historical headlines recorded inside the grid stream yet.")
