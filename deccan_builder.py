@@ -12,15 +12,26 @@ if not os.path.exists(SAVE_FOLDER):
     os.makedirs(SAVE_FOLDER)
 
 # ====================================================================
-# 🔒 STEP 2: CONFIGURED ADMIN CREDENTIALS
+# 🔒 ADMIN CREDENTIALS CONFIGURATION
 # ====================================================================
-# Updated precisely with your required login access password
 ADMIN_USERNAME = "admin"
 ADMIN_PASSWORD = "admin"
 
-# Initialize secure persistent session tracker memory states on startup
+# Initialize secure persistent session tracker memories on startup
 if "authenticated" not in st.session_state:
     st.session_state["authenticated"] = False
+if 'active_image_stream' not in st.session_state:
+    st.session_state['active_image_stream'] = None
+
+# Helper function to convert uploaded device files into cloud-safe data strings safely
+def convert_file_to_cache_data(uploaded_file):
+    try:
+        import base64
+        bytes_data = uploaded_file.getvalue()
+        base64_str = base64.b64encode(bytes_data).decode("utf-8")
+        return f"data:image/png;base64,{base64_str}"
+    except Exception:
+        return ""
 
 # ====================================================================
 # 🏛️ BRANDED MASTHEAD: Bilingual Newspaper Title Header (Always Visible)
@@ -28,7 +39,7 @@ if "authenticated" not in st.session_state:
 st.markdown(
     """
     <div style='text-align: center; margin-bottom: 25px;'>
-        <h1 style='margin: 0; padding: 0; font-size: 56px; font-weight: 800; color: #000000; font-family: sans-serif;'>నేటి డెక్కన్</h1>
+        <h1 style='margin: 0; padding: 0; font-size: 56px; font-weight: 800; color: #000000;'>నేటి డెక్కన్</h1>
         <h3 style='margin: 5px 0 0 0; padding: 0; font-size: 24px; font-weight: 600; color: #555555; letter-spacing: 3px;'>NETI DECCAN</h3>
     </div>
     <hr style='border-top: 3px double #333; margin-bottom: 30px;'>
@@ -37,12 +48,12 @@ st.markdown(
 )
 
 # ====================================================================
-# 🔒 STEP 3: URL QUERY PARAMETER ROUTER ENGINE (THE TWO FACES)
+# 🔒 URL QUERY PARAMETER ROUTER ENGINE (THE TWO FACES)
 # ====================================================================
 url_parameters = st.query_params
 is_admin_url = url_parameters.get("mode") == "admin"
 
-# Scan the folder directory to track existing entries
+# Scan the local folder directory to track existing entries
 saved_files = [f for f in os.listdir(SAVE_FOLDER) if f.endswith('.json')]
 saved_files.sort(reverse=True)
 
@@ -63,7 +74,6 @@ for file in saved_files:
 if is_admin_url:
     st.sidebar.title("🔐 Secure Login Gateway")
     
-    # Render Login Form UI if the active session memory is unauthenticated
     if not st.session_state["authenticated"]:
         st.subheader("Admin Verification Access Form")
         st.write("Please provide your authorization credentials to unlock your news workspace:")
@@ -77,19 +87,18 @@ if is_admin_url:
                 st.success("🎉 Access Granted! Unlocking your layout workspace panel...")
                 st.rerun()
             else:
-                st.error("❌ Incorrect username or password combination pattern. Access Denied.")
+                st.error("❌ Incorrect credentials pattern. Access Denied.")
                 
-    # If authenticated, unlock your writing and editing controls dashboard canvas
     else:
         st.sidebar.success("🟢 Authenticated Admin")
         if st.sidebar.button("🚪 Log Out of Workspace"):
             st.session_state["authenticated"] = False
+            st.session_state['active_image_stream'] = None
             st.rerun()
             
         st.sidebar.markdown("---")
         st.sidebar.subheader("📁 Article File Manager")
         
-        # Compile selection list options adding 'Create New' anchor block
         editor_map = {"--- ➕ Create New Article ---": None}
         editor_map.update(all_articles)
         
@@ -103,42 +112,34 @@ if is_admin_url:
                 loaded_data = json.load(f)
             default_headline = loaded_data.get("headline", "")
             default_sub_header = loaded_data.get("sub_header", "")
-            default_source_location = loaded_data.get("source_location", "ఆనందపురం డెక్కన్ న్యూస్")
             default_body = loaded_data.get("content", "")
             default_date = loaded_data.get("date", "")
-            default_image_log = loaded_data.get("associated_image", "No Image Uploaded")
+            default_image_log = loaded_data.get("associated_image", "")
             page_header = f"📝 Editing Article: {selected_headline}"
             button_label = "💾 Update and Save Changes to This Article"
+            if default_image_log:
+                st.session_state['active_image_stream'] = default_image_log
         else:
             default_headline = ""
             default_sub_header = ""
-            default_source_location = "ఆనందపురం డెక్కన్ న్యూస్"
             default_body = ""
             default_date = datetime.now().strftime("%B %d, %Y")
-            default_image_log = "No Image Uploaded"
+            default_image_log = ""
             page_header = "➕ Create and Format a New Article"
             button_label = "🚀 Publish and Save New Article to Archives"
 
         st.markdown(f"### {page_header}")
-        st.write("Modify the editing fields below to instantly adjust your custom layout configurations:")
 
         headline_input = st.text_input(label="Main Headline (ప్రధాన శీర్షిక):", value=default_headline, key="main_head_form")
         sub_header_input = st.text_input(label="Sub-Header Option (ఉప శీర్షిక - Optional):", value=default_sub_header, key="sub_head_form")
-        source_location_input = st.text_input(label="News Source / Incident Location (వార్త మూలం / స్థలం):", value=default_source_location, key="src_loc_form")
+        
+        # NOTE: STALAM / LOCATION INPUT BOX IS REMOVED ENTIRELY FROM HERE
+        
         body_input = st.text_area(label="News Content (వార్త వివరాలు):", value=default_body, height=200, key="body_txt_form")
         date_input = st.text_input(label="Publish Date (తేదీ):", value=default_date, key="pub_date_form")
 
         st.write("### 🖼️ Layout Photo Settings")
         image_option = st.radio("Choose Image Input Method:", ("📋 Paste Copied Photo (Ctrl+V)", "📤 Upload Local File from Device", "Use Web Image URL"))
-
-        uploaded_image = None
-        image_name_log = default_image_log
-
-        if 'final_pasted_image_string' not in st.session_state:
-            st.session_state['final_pasted_image_string'] = None
-
-        if is_edit_mode and default_image_log and default_image_log.startswith("data:image"):
-            st.session_state['final_pasted_image_string'] = default_image_log
 
         if image_option == "📋 Paste Copied Photo (Ctrl+V)":
             st.write("👇 **Click once inside the box below**, then press **Ctrl + V** to paste your clipboard picture:")
@@ -167,25 +168,18 @@ if is_admin_url:
             """
             pasted_stream_result = st.components.v1.html(paste_html_bridge, height=95)
             if pasted_stream_result and isinstance(pasted_stream_result, str) and pasted_stream_result.startswith("data:image"):
-                st.session_state['final_pasted_image_string'] = pasted_stream_result
-            if st.session_state['final_pasted_image_string']:
-                uploaded_image = st.session_state['final_pasted_image_string']
-                image_name_log = uploaded_image
+                st.session_state['active_image_stream'] = pasted_stream_result
+                
         elif image_option == "📤 Upload Local File from Device":
-            st.session_state['final_pasted_image_string'] = None
             file_device_upload = st.file_uploader("Select an image file:", type=["jpg", "jpeg", "png"])
             if file_device_upload:
-                uploaded_image = file_device_upload
-                image_name_log = file_device_upload.name
+                st.session_state['active_image_stream'] = convert_file_to_cache_data(file_device_upload)
         else:
-            st.session_state['final_pasted_image_string'] = None
             initial_url = default_image_log if default_image_log and default_image_log.startswith("http") else "https://unsplash.com"
             image_url = st.text_input("Paste Image URL:", value=initial_url, key="img_url_form")
             if image_url:
-                uploaded_image = image_url
-                image_name_log = image_url
+                st.session_state['active_image_stream'] = image_url
 
-        st.write("### 💾 Database Control Actions")
         st.write("### 💾 Database Control Actions")
         col_save, col_delete = st.columns([0.7, 0.3])
         
@@ -204,15 +198,15 @@ if is_admin_url:
                     article_data = {
                         "headline": headline_input,
                         "sub_header": sub_header_input,
-                        "source_location": source_location_input,
                         "content": body_input,
                         "date": date_input,
-                        "associated_image": image_name_log if image_name_log else "No Image Uploaded",
+                        "associated_image": st.session_state['active_image_stream'] if st.session_state['active_image_stream'] else "",
                         "exported_at": timestamp_str
                     }
                     with open(file_path, "w", encoding="utf-8") as f:
                         json.dump(article_data, f, ensure_ascii=False, indent=4)
-                    st.success("🎉 Success! Article updated.")
+                    st.success("🎉 Success! Article compiled and fully saved into archives.")
+                    st.session_state['active_image_stream'] = None
                     st.rerun()
 
         with col_delete:
@@ -221,17 +215,45 @@ if is_admin_url:
                     file_to_remove = os.path.join(SAVE_FOLDER, active_file)
                     if os.path.exists(file_to_remove):
                         os.remove(file_to_remove)
-                        st.session_state['final_pasted_image_string'] = None
+                        st.session_state['active_image_stream'] = None
                         st.success("💥 Article successfully deleted!")
                         st.rerun()
             else:
                 st.button("🗑️ Delete Option Unavailable", disabled=True, use_container_width=True, key="disabled_del_btn")
 
+        # ====================================================================
+        # LIVE PREVIEW NOW RE-ADDED DIRECTLY BELOW THE CREATOR PANEL
+        # ====================================================================
+        st.markdown("---")
+        st.write("### 👀 Live Layout Preview (నిజ సమయ ప్రివ్యూ):")
+        with st.container(border=True):
+            if headline_input:
+                st.markdown(f"## {headline_input}")
+            else:
+                st.markdown("## *[Headline Block Blank]*")
+                
+            if sub_header_input:
+                st.markdown(f"#### *{sub_header_input}*")
+                
+            st.caption(f"📅 తేదీ: {date_input}")
+            st.markdown("---")
+            
+            col_p_text, col_p_photo = st.columns([0.65, 0.35], gap="large")
+            with col_p_text:
+                if body_input:
+                    st.write(body_input)
+                else:
+                    st.info("Write news content inside the text box to view preview layouts here.")
+            with col_p_photo:
+                if st.session_state['active_image_stream']:
+                    st.image(st.session_state['active_image_stream'], caption="ప్రివ్యూ చిత్రం (Preview)", use_container_width=True)
+                else:
+                    st.info("No layout photo added to preview container frame.")
+
 # ====================================================================
-# FACE 2: PUBLIC PORTAL NEWS READER (Default Standard Face)
+# FACE 2: PUBLIC PORTAL NEWS READER (Default Standard Face Viewers Page)
 # ====================================================================
 else:
-    # Sidebar features for readers to filter stories by keyword safely
     search_query = st.sidebar.text_input("🔍 వెతకండి (Search articles by keyword):", placeholder="Type keywords here...", key="reader_search_in").strip()
     
     st.markdown("### 📰 తాజా వార్తలు (Latest News Updates)")
@@ -247,7 +269,6 @@ else:
                 
             arc_headline = art.get("headline", "Untitled Headline")
             arc_sub_header = art.get("sub_header", "")
-            arc_location = art.get("source_location", "")
             arc_content = art.get("content", "")
             arc_date = art.get("date", "")
             arc_image = art.get("associated_image", "")
@@ -261,18 +282,15 @@ else:
                 
                 col_text, col_photo = st.columns([0.65, 0.35], gap="large")
                 with col_text:
-                    display_text = ""
-                    if arc_location:
-                        display_text += f"**{arc_location} :** "
-                    display_text += arc_content
-                    st.write(display_text)
+                    st.write(arc_content)
+                    
                 with col_photo:
                     if arc_image and isinstance(arc_image, str) and (arc_image.startswith("http") or arc_image.startswith("data:image")):
                         st.image(arc_image, use_container_width=True)
     else:
         with st.container(border=True):
             st.markdown("##   సీఎం విజయ్ దళపతితో అరకు ఎంపీ దంపతుల భేటీ")
-            st.caption(f"📅 తేదీ: {datetime.now().strftime('%B %d, %Y')}")
+            st.caption("📅 తేదీ: September 2, 2026")
             st.markdown("---")
             col_t, col_p = st.columns([0.65, 0.35], gap="large")
             with col_t:
@@ -282,4 +300,4 @@ else:
 
 # 9. FOOTER STATUS BAR MONITOR
 st.markdown("---")
-st.caption("📰 **నేటి డెక్కన్ (Neti Deccan) Public News Portal Engine v5.1**")
+st.caption("📰 **నేటి డెక్కన్ (Neti Deccan) Public News Portal Engine v5.3**")
