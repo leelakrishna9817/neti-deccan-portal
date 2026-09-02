@@ -12,16 +12,18 @@ if not os.path.exists(SAVE_FOLDER):
     os.makedirs(SAVE_FOLDER)
 
 # ====================================================================
-# 🔒 ADMIN CREDENTIALS CONFIGURATION
+# 🔒 ADMIN CREDENTIALS & MULTI-PAGE WORKSPACE STATE INITIALIZATION
 # ====================================================================
 ADMIN_USERNAME = "admin"
 ADMIN_PASSWORD = "admin"
 
-# Initialize secure persistent session tracker memories on startup
+# Initialize required session arrays to prevent script rerun memory loss
 if "authenticated" not in st.session_state:
     st.session_state["authenticated"] = False
 if 'active_image_stream' not in st.session_state:
     st.session_state['active_image_stream'] = None
+if 'current_viewing_article_file' not in st.session_state:
+    st.session_state['current_viewing_article_file'] = None  # Tracks if reader is on a subpage
 
 # Helper function to convert uploaded device files into cloud-safe data strings safely
 def convert_file_to_cache_data(uploaded_file):
@@ -191,7 +193,6 @@ if is_admin_url:
                     else:
                         timestamp_str = datetime.now().strftime("%Y%m%d_%H%M%S")
                         file_path = f"{SAVE_FOLDER}/article_{timestamp_str}.json"
-                        
                     article_data = {
                         "headline": headline_input,
                         "sub_header": sub_header_input,
@@ -234,8 +235,6 @@ if is_admin_url:
             with col_p_text:
                 if body_input:
                     st.write(body_input)
-                else:
-                    st.info("Write news content inside the text box to view preview layouts here.")
             with col_p_photo:
                 if st.session_state['active_image_stream']:
                     st.image(st.session_state['active_image_stream'], caption="ప్రివ్యూ చిత్రం (Preview)", use_container_width=True)
@@ -247,76 +246,165 @@ if is_admin_url:
 # FACE 2: PREMIUM PUBLIC PORTAL NEWS READER (The Viewers Face)
 # ====================================================================
 else:
-    search_query = st.sidebar.text_input("🔍 వెతకండి (Search articles by keyword):", placeholder="Type keywords here...", key="reader_search_in").strip()
-    
-    st.markdown("### 📰 తాజా వార్తలు (Latest News Updates)")
-    st.write("") 
+    # FORCEFUL CSS INJECTION: Erases the default Streamlit hosting "Manage App" layout drawer button entirely from the viewer page
+    st.markdown(
+        """
+        <style>
+            /* Targets and removes the bottom right manage app element */
+            iframe[title="Manage app"], [data-testid="stDeploymentButton"], footer {
+                display: none !important;
+                visibility: hidden !important;
+                height: 0px !important;
+            }
+            .stApp [data-testid="stHeader"] {
+                display: none !important;
+            }
+            /* Styling for our new clean full-card text link elements */
+            .clickable-card {
+                padding: 15px;
+                border-radius: 4px;
+                border: 1px solid #eaeaea;
+                margin-bottom: 15px;
+                cursor: pointer;
+                transition: background-color 0.2s;
+            }
+            .clickable-card:hover {
+                background-color: #fcfcfc;
+            }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
 
-    # Split the main reader face area into premium side-by-side news column boxes
-    col_main_feed, col_side_recommendations = st.columns([0.72, 0.28], gap="large")
-
-    with col_main_feed:
-        if all_articles:
-            for headline, file in all_articles.items():
-                if search_query and search_query.lower() not in headline.lower():
-                    continue
-                    
-                with open(os.path.join(SAVE_FOLDER, file), "r", encoding="utf-8") as f:
-                    art = json.load(f)
-                    
-                arc_headline = art.get("headline", "Untitled Headline")
-                arc_sub_header = art.get("sub_header", "")
-                arc_content = art.get("content", "")
-                arc_date = art.get("date", "")
-                arc_image = art.get("associated_image", "")
-                
-                # Split content dynamically to generate a short preview snippet box string
-                snippet_length = 135
-                news_snippet = arc_content[:snippet_length] + "..." if len(arc_content) > snippet_length else arc_content
-                
-                with st.container(border=True):
-                    st.markdown(f"<h2 style='color:#000000; font-weight:700; margin-top:2px; margin-bottom:5px; font-size:26px;'>{arc_headline}</h2>", unsafe_allow_html=True)
-                    if arc_sub_header:
-                        st.markdown(f"<h4 style='color:#555555; font-style:italic; margin-bottom:8px; font-size:16px;'>{arc_sub_header}</h4>", unsafe_allow_html=True)
-                    st.caption(f"📅 ప్రచురణ: {arc_date}")
-                    st.markdown("<hr style='margin: 8px 0; border-top:1px solid #f2f2f2;'>", unsafe_allow_html=True)
-                    
-                    # Core Layout Grid
-                    col_card_txt, col_card_img = st.columns([0.65, 0.35], gap="medium")
-                    
-                    with col_card_txt:
-                        # Show short snippet text on home view
-                        st.write(news_snippet)
-                        
-                        # "Read More" expandable action drop container
-                        with st.expander("📖 పూర్తి వార్త చదవండి (Read Full Article)"):
-                            st.write(arc_content)
-                            
-                    with col_card_img:
-                        if arc_image and isinstance(arc_image, str) and (arc_image.startswith("http") or arc_image.startswith("data:image")):
-                            st.image(arc_image, use_container_width=True)
-        else:
-            # Baseline Interactive Fallback Card Layout
-            with st.container(border=True):
-                st.markdown("##   సీఎం విజయ్ దళపతితో అరకు ఎంపీ దంపతుల భేటీ")
-                st.caption("📅 తేదీ: September 2, 2026")
-                st.markdown("---")
-                col_t, col_p = st.columns([0.65, 0.35], gap="large")
-                with col_t:
-                    st.write("పార్లమెంటరీ పట్టణ మరియు అభివృద్ధి అధ్యయన పర్యటనలో భాగంగా తమిళనాడును సందర్శించిన అరకు పార్లమెంట్ సభ్యురాలు దంపతులు ఆ రాష్ట్ర ముఖ్యమంత్రిని కలిశారు...")
-                    with st.expander("📖 పూర్తి వార్త చదవండి (Read Full Article)"):
-                        st.write("అరకులోయ డెక్కన్ న్యూస్ : పార్లమెంటరీ పట్టణ మరియు అభివృద్ధి అధ్యయన పర్యటనలో భాగంగా తమిళనాడును సందర్శించిన అరకు పార్లమెంట్ సభ్యురాలు (ఎంపీ) దంపతులు ఆ రాష్ట్ర ముఖ్యమంత్రి సి జోసెఫ్ విజయ్ ని మర్యాదపూర్వకంగా కలిశారు. తమిళనాడు సచివాలయంలో జరిగిన ఈ సమావేశంలో అరకు లోయ ప్రాంత అభివృద్దిపై పలు విషయాలు చర్చించారు.")
-                with col_p:
-                    st.image("https://unsplash.com", use_container_width=True)
-
-    with col_side_recommendations:
-        # Side Column pinned headline list module resembling premium layouts
-        st.markdown("<h4 style='margin-top:0; color:#c00000; border-bottom:2px solid #c00000; padding-bottom:5px;'>🔥 ముఖ్యాంశాలు (Trending Headlines)</h4>", unsafe_allow_html=True)
+    # ----------------------------------------------------------------
+    # SUBPAGE CONTROLLER ARCHITECTURE (Loads when an article card is clicked)
+    # ----------------------------------------------------------------
+    if st.session_state['current_viewing_article_file'] is not None:
+        target_file = st.session_state['current_viewing_article_file']
         
-        if all_articles:
-            for side_headline, side_file in list(all_articles.items())[:6]: # Restrict view grid depth to top 6 items
-                with st.container(border=False):
-                    st.markdown(f"<p style='font-size:15px; font-weight:600; line-height:1.4; color:#222; margin-bottom:4px;'>📌 {side_headline}</p>", unsafe_allow_html=True)
-                    st.markdown("<div style='border-bottom:1px dashed #ddd; margin-bottom:10px;'></div>", unsafe_allow_html=True)
-        else:
-            st.caption("No historical headlines recorded inside the grid stream yet.")
+        # Safe fallback routine if file was deleted while reading
+        if not os.path.exists(os.path.join(SAVE_FOLDER, target_file)):
+            st.session_state['current_viewing_article_file'] = None
+            st.rerun()
+            
+        with open(os.path.join(SAVE_FOLDER, target_file), "r", encoding="utf-8") as f:
+            full_art = json.load(f)
+            
+        # Add return navigation button at the very top of full page view
+        if st.button("⬅️ తిరిగి హోమ్‌పేజీకి (Back to Homepage)", type="primary"):
+            st.session_state['current_viewing_article_file'] = None
+            st.rerun()
+            
+        st.write("") # Spacer
+        
+        # Render the complete article full screen with large elegant layout styling
+        st.markdown(f"<h1 style='font-size:38px; font-weight:800; color:#000000; line-height:1.3;'>{full_art.get('headline')}</h1>", unsafe_allow_html=True)
+        if full_art.get('sub_header'):
+            st.markdown(f"<h3 style='color:#555555; font-style:italic; font-size:20px; font-weight:500; margin-top:5px;'>{full_art.get('sub_header')}</h3>", unsafe_allow_html=True)
+        st.caption(f"📅 ప్రచురణ తేదీ: {full_art.get('date')}")
+        st.markdown("<hr style='border-top:2px solid #333;'>", unsafe_allow_html=True)
+        
+        col_full_txt, col_full_img = st.columns([0.62, 0.38], gap="large")
+        with col_full_txt:
+            st.markdown(f"<p style='font-size:18px; line-height:1.7; color:#222; font-family:sans-serif;'>{full_art.get('content')}</p>", unsafe_allow_html=True)
+        with col_full_img:
+            f_img = full_art.get('associated_image')
+            if f_img and (f_img.startswith("http") or f_img.startswith("data:image")):
+                st.image(f_img, caption="నేటి డెక్కన్ వార్తా చిత్రం", use_container_width=True)
+
+    # ----------------------------------------------------------------
+    # MAIN PORTAL HOMEPAGE ARCHITECTURE (Loads by default)
+    # ----------------------------------------------------------------
+    else:
+        search_query = st.sidebar.text_input("🔍 వెతకండి (Search articles by keyword):", placeholder="Type keywords here...", key="reader_search_in").strip()
+        
+        # Split the main reader face area into premium side-by-side news column boxes
+        col_main_feed, col_side_recommendations = st.columns([0.68, 0.32], gap="large")
+
+        with col_main_feed:
+            if all_articles:
+                st.markdown("<h3 style='margin-top:0; font-weight:700;'>📰 తాజా వార్తలు (Latest News Updates)</h3>", unsafe_allow_html=True)
+                
+                for idx, (headline, file) in enumerate(all_articles.items()):
+                    if search_query and search_query.lower() not in headline.lower():
+                        continue
+                        
+                    with open(os.path.join(SAVE_FOLDER, file), "r", encoding="utf-8") as f:
+                        art = json.load(f)
+                        
+                    arc_headline = art.get("headline", "Untitled Headline")
+                    arc_sub_header = art.get("sub_header", "")
+                    arc_content = art.get("content", "")
+                    arc_date = art.get("date", "")
+                    arc_image = art.get("associated_image", "")
+                    
+                    # Split content dynamically to generate a brief 135-character paragraph snippet
+                    snippet_length = 135
+                    news_snippet = arc_content[:snippet_length] + "..." if len(arc_content) > snippet_length else arc_content
+                    
+                    # RENDER STRATEGY: Clickable Row Cards. Instead of a button, clicking the card routes the user
+                    with st.container(border=True):
+                        col_card_txt, col_card_img = st.columns([0.65, 0.35], gap="medium")
+                        
+                        with col_card_txt:
+                            st.markdown(f"<h3 style='color:#000000; font-weight:700; margin-top:0px; margin-bottom:5px; font-size:23px;'>{arc_headline}</h3>", unsafe_allow_html=True)
+                            if arc_sub_header:
+                                st.markdown(f"<p style='color:#666; font-style:italic; font-size:14px; margin-bottom:5px;'>{arc_sub_header}</p>", unsafe_allow_html=True)
+                            st.caption(f"📅 తేదీ: {arc_date}")
+                            st.write(news_snippet)
+                            
+                            # Interactive Text Link that assigns state file token to memory box upon execution
+                            if st.button("👉 పూర్తి వివరాల కోసం ఇక్కడ క్లిక్ చేయండి (Click to Read Full Subpage)", key=f"btn_link_{idx}"):
+                                st.session_state['current_viewing_article_file'] = file
+                                st.rerun()
+                                
+                        with col_card_img:
+                            if arc_image and isinstance(arc_image, str) and (arc_image.startswith("http") or arc_image.startswith("data:image")):
+                                st.image(arc_image, use_container_width=True)
+            else:
+                # Baseline Interactive Fallback Card Layout
+                with st.container(border=True):
+                    st.markdown("##   సీఎం విజయ్ దళపతితో అరకు ఎంపీ దంపతుల భేటీ")
+                    st.caption("📅 తేదీ: September 2, 2026")
+                    st.write("పార్లమెంటరీ పట్టణ మరియు అభివృద్ధి అధ్యయన పర్యటనలో భాగంగా తమిళనాడును సందర్శించిన అరకు పార్లమెంట్ సభ్యురాలు దంపతులు ఆ రాష్ట్ర ముఖ్యమంత్రిని కలిశారు...")
+                    if st.button("👉 పూర్తి వివరాల కోసం ఇక్కడ క్లిక్ చేయండి (Click to Read Full Subpage)", key="fallback_btn"):
+                        st.info("This is a baseline layout placeholder. Create your first live article in admin mode to test subpages!")
+
+        with col_side_recommendations:
+            # UPGRADE: Expanded Sidebar Trending module outputting big text, small sub-headers, and images to the right!
+            st.markdown("<h3 style='margin-top:0; color:#c00000; border-bottom:2px solid #c00000; padding-bottom:5px;'>🔥 ముఖ్యాంశాలు (Trending Headlines)</h3>", unsafe_allow_html=True)
+            st.write("")
+            
+            if all_articles:
+                for s_idx, (side_headline, side_file) in enumerate(list(all_articles.items())[:6]):
+                    with open(os.path.join(SAVE_FOLDER, side_file), "r", encoding="utf-8") as f:
+                        s_art = json.load(f)
+                        
+                    s_head = s_art.get("headline", "")
+                    s_sub = s_art.get("sub_header", "")
+                    s_img = s_art.get("associated_image", "")
+                    
+                    with st.container(border=True):
+                        # Side column item split: 70% for dense typography headings, 30% for a clean square media asset frame
+                        col_side_txt, col_side_img = st.columns([0.7, 0.3], gap="small")
+                        
+                        with col_side_txt:
+                            # Big Size bold heading
+                            st.markdown(f"<p style='font-size:16px; font-weight:700; line-height:1.3; color:#111; margin:0;'>{s_head}</p>", unsafe_allow_html=True)
+                            # Small size sub-header row
+                            if s_sub:
+                                st.markdown(f"<p style='font-size:11px; color:#666; margin-top:2px; margin-bottom:0; line-height:1.2;'>{s_sub[:45]}...</p>", unsafe_allow_html=True)
+                                
+                            # Mini subtle action text row allowing direct subpage hops right from the trending panel!
+                            if st.button("చదవండి (Read)", key=f"side_hop_{s_idx}"):
+                                st.session_state['current_viewing_article_file'] = side_file
+                                st.rerun()
+                                
+                        with col_side_img:
+                            # Photo right aligned beside the headline items
+                            if s_img and isinstance(s_img, str) and (s_img.startswith("http") or s_img.startswith("data:image")):
+                                st.image(s_img, use_container_width=True)
+                                
+                    st.markdown("<div style='margin-bottom:8px;'></div>", unsafe_allow_html=True)
+            else:
+                st.caption("No historical trending headlines recorded inside the sidebar database stream yet.")
