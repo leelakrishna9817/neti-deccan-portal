@@ -247,11 +247,11 @@ if is_admin_url:
 # FACE 2: PREMIUM PUBLIC PORTAL NEWS READER (The Viewers Face)
 # ====================================================================
 else:
-    # FORCEFUL CSS INJECTION: Erases the default Streamlit hosting "Manage App" layout drawer button entirely from the viewer page
+    # FORCEFUL CSS INJECTION: Erases "Manage App" widgets completely and styles our beautiful raw HTML cards
     st.markdown(
         """
         <style>
-            /* Completely hides the developer app manage widget panel and standard header fields */
+            /* Hides the bottom developer bar completely across all screens */
             iframe[src*="host-service"], iframe[title="Manage app"], [data-testid="stDeploymentButton"], footer, [data-testid="stHeader"] {
                 display: none !important;
                 visibility: hidden !important;
@@ -260,17 +260,37 @@ else:
                 opacity: 0 !important;
             }
             
-            /* Custom Style Elements to simulate fully clickable layout rows */
+            /* Clean styles for our unified clickable newspaper rows */
+            .news-card-anchor {
+                text-decoration: none !important;
+                color: inherit !important;
+                display: block !important;
+                margin-bottom: 20px;
+            }
             .news-clickable-box {
                 border: 1px solid #e2e8f0;
-                padding: 20px;
+                padding: 22px;
                 border-radius: 6px;
-                margin-bottom: 18px;
-                transition: transform 0.2s, box-shadow 0.2s;
                 background-color: #ffffff;
+                transition: box-shadow 0.2s, border-color 0.2s;
             }
             .news-clickable-box:hover {
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+                box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+                border-color: #cbd5e1;
+                background-color: #fafafa;
+            }
+            
+            /* Clean styling for our sidebar thumbnail entries */
+            .sidebar-clickable-card {
+                border: 1px solid #e2e8f0;
+                padding: 12px;
+                border-radius: 4px;
+                background-color: #ffffff;
+                margin-bottom: 12px;
+                transition: background-color 0.2s;
+            }
+            .sidebar-clickable-card:hover {
+                background-color: #fafafa;
                 border-color: #cbd5e1;
             }
         </style>
@@ -281,25 +301,24 @@ else:
     # ----------------------------------------------------------------
     # SUBPAGE CONTROLLER: ARTICLE FULL VIEW (With Pinned Media Sidebar!)
     # ----------------------------------------------------------------
-    if st.session_state['current_viewing_article_file'] is not None:
-        target_file = st.session_state['current_viewing_article_file']
+    if current_viewing_file is not None:
+        target_file = current_viewing_file
         
-        # Check if the file still exists safely
         if not os.path.exists(os.path.join(SAVE_FOLDER, target_file)):
-            st.session_state['current_viewing_article_file'] = None
+            st.query_params.clear()
             st.rerun()
             
         with open(os.path.join(SAVE_FOLDER, target_file), "r", encoding="utf-8") as f:
             full_art = json.load(f)
             
-        # Return to homepage link anchor execution element
-        if st.button("⬅️ తిరిగి హోమ్‌పేజీకి (Back to Homepage)", type="primary", key="global_back_to_home"):
-            st.session_state['current_viewing_article_file'] = None
+        # Return to homepage button
+        if st.button("⬅️ తిరిగి హోమ్‌పేజీకి (Back to Homepage)", type="primary"):
+            st.query_params.clear()
             st.rerun()
             
-        st.write("") # Spacer
+        st.write("") 
         
-        # Split article subpage view side-by-side (72% Main Read Content, 28% Pinned Trending Module)
+        # Split article subpage view side-by-side (72% Main Content, 28% Pinned Trending Module)
         col_sub_article, col_sub_sidebar = st.columns([0.72, 0.28], gap="large")
         
         with col_sub_article:
@@ -309,24 +328,21 @@ else:
             st.caption(f"📅 ప్రచురణ తేదీ: {full_art.get('date')}")
             st.markdown("<hr style='border-top:2px solid #222; margin-top:10px; margin-bottom:20px;'>", unsafe_allow_html=True)
             
-            # Subpage media core block placement
             f_img = full_art.get('associated_image')
             if f_img and (f_img.startswith("http") or f_img.startswith("data:image")):
                 st.image(f_img, use_container_width=True)
-                st.write("") # Spacer
+                st.write("") 
                 
             st.markdown(f"<p style='font-size:18px; line-height:1.75; color:#1a1a1a; font-family:sans-serif;'>{full_art.get('content')}</p>", unsafe_allow_html=True)
 
         with col_sub_sidebar:
-            # Pinned Trending Headlines list compiled strictly inside the news article subpage section!
             st.markdown("<h3 style='margin-top:0; color:#c00000; border-bottom:2px solid #c00000; padding-bottom:5px; font-size:22px;'>🔥 ముఖ్యాంశాలు (Trending Headlines)</h3>", unsafe_allow_html=True)
             st.write("")
             
-            # Filter down selection excluding the active read article from recommendation loops
             side_items = [(h, f) for h, f in all_articles.items() if f != target_file]
             
             if side_items:
-                for s_idx, (side_headline, side_file) in enumerate(side_items[:6]):
+                for side_headline, side_file in side_items[:6]:
                     with open(os.path.join(SAVE_FOLDER, side_file), "r", encoding="utf-8") as f:
                         s_art = json.load(f)
                         
@@ -334,27 +350,32 @@ else:
                     s_sub = s_art.get("sub_header", "")
                     s_img = s_art.get("associated_image", "")
                     
-                    # Clean Clickable Cards for sidebar trending modules (No read buttons!)
-                    with st.container(border=True):
-                        col_side_txt, col_side_img = st.columns([0.72, 0.28], gap="small")
-                        
-                        with col_side_txt:
-                            # Big Size title alignment
-                            st.markdown(f"<p style='font-size:16px; font-weight:700; line-height:1.3; color:#111; margin:0;'>{s_head}</p>", unsafe_allow_html=True)
-                            if s_sub:
-                                st.markdown(f"<p style='font-size:11px; color:#555; margin-top:3px; margin-bottom:0; line-height:1.2;'>{s_sub[:40]}...</p>", unsafe_allow_html=True)
-                                
-                            # Mini subtle action text row allowing direct subpage hops right from the trending panel!
-                            if st.button("చదవండి (Read)", key=f"side_hop_sub_{s_idx}", use_container_width=True):
-                                st.session_state['current_viewing_article_file'] = side_file
-                                st.rerun()
-                                
-                        with col_side_img:
-                            if s_img and isinstance(s_img, str) and (s_img.startswith("http") or s_img.startswith("data:image")):
-                                st.image(s_img, use_container_width=True)
-                    st.write("")
+                    # TRENDING BLOCK: Clickable Cards with images inside the sidebar (NO BUTTONS!)
+                    img_html = f'<img src="{s_img}" style="width:100%; border-radius:4px; aspect-ratio:4/3; object-fit:cover;"/>' if s_img else ''
+                    sub_html = f'<p style="font-size:12px; color:#666; margin-top:3px; margin-bottom:0; line-height:1.2;">{s_sub[:45]}...</p>' if s_sub else ''
+                    
+                    st.markdown(
+                        f"""
+                        <a href="?article={side_file}" target="_self" class="news-card-anchor">
+                            <div class="sidebar-clickable-card">
+                                <table style="width:100%; border-collapse:collapse; border:none;">
+                                    <tr>
+                                        <td style="width:72%; vertical-align:top; border:none; padding:0; padding-right:8px;">
+                                            <p style="font-size:15px; font-weight:700; line-height:1.3; color:#111; margin:0;">{s_head}</p>
+                                            {sub_html}
+                                        </td>
+                                        <td style="width:28%; vertical-align:middle; border:none; padding:0;">
+                                            {img_html}
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </a>
+                        """,
+                        unsafe_allow_html=True
+                    )
             else:
-                st.caption("No additional headlines recorded inside the secondary stream data log folder.")
+                st.caption("No additional headlines recorded.")
 
     # ----------------------------------------------------------------
     # MAIN PORTAL HOMEPAGE ARCHITECTURE (Reader Landing View Face)
@@ -363,51 +384,53 @@ else:
         search_query = st.sidebar.text_input("🔍 వెతకండి (Search articles by keyword):", placeholder="Type keywords here...", key="reader_search_in").strip()
         
         st.markdown("<h3 style='margin-top:0; font-weight:700; font-size:26px;'>📰 తాజా వార్తలు (Latest News Updates)</h3>", unsafe_allow_html=True)
-        st.write("") # Spacer
+        st.write("") 
 
-        # HOMEPAGE LAYOUT: Full wide single column grid feed. The trending sidebar column is entirely gone from here!
         if all_articles:
-            for idx, (headline, file) in enumerate(all_articles.items()):
+            for headline, file in all_articles.items():
                 if search_query and search_query.lower() not in headline.lower():
                     continue
                     
                 with open(os.path.join(SAVE_FOLDER, file), "r", encoding="utf-8") as f:
                     art = json.load(f)
+                    
                 arc_headline = art.get("headline", "Untitled Headline")
                 arc_sub_header = art.get("sub_header", "")
                 arc_content = art.get("content", "")
                 arc_date = art.get("date", "")
                 arc_image = art.get("associated_image", "")
                 
-                # Split paragraph block dynamically into a clean short overview snippet text string
                 snippet_length = 160
                 news_snippet = arc_content[:snippet_length] + "..." if len(arc_content) > snippet_length else arc_content
                 
-                # NO DISPLAY BUTTONS: Click the text hyperlink below to route subpage redirects smoothly
-                with st.container(border=True):
-                    col_card_txt, col_card_img = st.columns([0.68, 0.32], gap="large")
-                    
-                    with col_card_txt:
-                        st.markdown(f"<h3 style='color:#000000; font-weight:700; margin-top:0px; margin-bottom:5px; font-size:24px;'>{arc_headline}</h3>", unsafe_allow_html=True)
-                        if arc_sub_header:
-                            st.markdown(f"<p style='color:#555; font-style:italic; font-size:15px; margin-bottom:8px;'>{arc_sub_header}</p>", unsafe_allow_html=True)
-                        st.caption(f"📅 తేదీ: {arc_date}")
-                        st.write(news_snippet)
-                        st.write("") # Spacer
-                        
-                        # Clean Text Action Redirect Token Link (No buttons on display!)
-                        if st.button("👉 ఈ వార్త పూర్తి వివరాల కోసం ఇక్కడ క్లిక్ చేయండి (Read Full Article Subpage)", key=f"main_card_link_{idx}"):
-                            st.session_state['current_viewing_article_file'] = file
-                            st.rerun()
-                            
-                    with col_card_img:
-                        if arc_image and isinstance(arc_image, str) and (arc_image.startswith("http") or arc_image.startswith("data:image")):
-                            st.image(arc_image, use_container_width=True)
+                # HOMEPAGE CARD FIXED: Clickable container cards built via custom safe HTML layer!
+                img_tag_html = f'<img src="{arc_image}" style="width:100%; border-radius:4px; box-shadow:0 1px 3px rgba(0,0,0,0.05);"/>' if arc_image else ''
+                sub_tag_html = f'<p style="color:#555; font-style:italic; font-size:15px; margin-top:2px; margin-bottom:6px;">{arc_sub_header}</p>' if arc_sub_header else ''
+                
+                st.markdown(
+                    f"""
+                    <a href="?article={file}" target="_self" class="news-card-anchor">
+                        <div class="news-clickable-box">
+                            <table style="width:100%; border-collapse:collapse; border:none;">
+                                <tr>
+                                    <td style="width:68%; vertical-align:top; border:none; padding:0; padding-right:20px;">
+                                        <h3 style="color:#000000; font-weight:700; margin:0; margin-bottom:5px; font-size:24px; line-height:1.3;">{arc_headline}</h3>
+                                        {sub_tag_html}
+                                        <p style="color:#888; font-size:12px; margin:0; margin-bottom:8px;">📅 తేదీ: {arc_date}</p>
+                                        <p style="font-size:15px; color:#333; line-height:1.5; margin:0;">{news_snippet}</p>
+                                    </td>
+                                    <td style="width:32%; vertical-align:top; border:none; padding:0;">
+                                        {img_tag_html}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </a>
+                    """,
+                    unsafe_allow_html=True
+                )
         else:
-            # Baseline Interactive Fallback Card Layout
             with st.container(border=True):
-                st.markdown("##   సీఎం విజయ్ దళపతితో అరకు ఎంపీ దంపతుల భేటీ")
+                st.markdown("## సీఎం విజయ్ దళపతితో అరకు ఎంపీ దంపతుల భేటీ")
                 st.caption("📅 తేదీ: September 2, 2026")
                 st.write("పార్లమెంటరీ పట్టణ మరియు అభివృద్ధి అధ్యయన పర్యటనలో భాగంగా తమిళనాడును సందర్శించిన అరకు పార్లమెంట్ సభ్యురాలు దంపతులు ఆ రాష్ట్ర ముఖ్యమంత్రిని కలిశారు...")
-                if st.button("👉 ఈ వార్త పూర్తి వివరాల కోసం ఇక్కడ క్లిక్ చేయండి (Read Full Article Subpage)", key="fallback_btn"):
-                    st.info("This is a baseline layout placeholder. Create your first live article in admin mode to test subpages!")
