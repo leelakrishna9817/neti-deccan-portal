@@ -55,6 +55,9 @@ st.markdown(
 url_parameters = st.query_params
 is_admin_url = url_parameters.get("mode") == "admin"
 
+# FIX: This line must be here to create the variable and prevent the NameError crash!
+current_viewing_file = url_parameters.get("article", None)
+
 # Scan the local folder directory to track existing entries
 saved_files = [f for f in os.listdir(SAVE_FOLDER) if f.endswith('.json')]
 saved_files.sort(reverse=True)
