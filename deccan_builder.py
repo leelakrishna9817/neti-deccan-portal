@@ -127,49 +127,44 @@ render_unified_branding_masthead()
 # FACE 1: PRIVATE EDITING WORKSPACE GATEWAY (Activated via ?mode=admin)
 # ====================================================================
 if is_admin_url:
-    st.markdown("<div style='background-color:#f1f5f9; padding:10px; border-radius:4px; text-align:center;'><h4>✍️ నేటి డెక్కన్ - EDIT CONTROL PANEL</h4></div><br>", unsafe_allow_html=True)
+    st.sidebar.markdown("### ⚙️ System Terminal")
     
     if not st.session_state["authenticated"]:
+        st.markdown("<div style='background-color:#f1f5f9; padding:10px; border-radius:4px; text-align:center;'><h4>🔒 ADMIN WORKSPACE SECURE SIGN-IN</h4></div><br>", unsafe_allow_html=True)
         user_input = st.text_input("Username:", placeholder="Type user id...", key="adm_user_in")
         pass_input = st.text_input("Password:", type="password", placeholder="Type secure key...", key="adm_pass_in")
-        if st.button("🔒 Login", use_container_width=True):
+        if st.button("🔒 Unlock Dashboard", use_container_width=True):
             if user_input == ADMIN_USERNAME and pass_input == ADMIN_PASSWORD:
                 st.session_state["authenticated"] = True
                 st.rerun()
-            else:
-                st.error("❌ Incorrect credentials.")
-                
+            else: st.error("❌ Incorrect username or password combination.")
+            
     else:
-        st.sidebar.success("🟢 Authenticated Admin")
-        if st.sidebar.button("🚪 Log Out of System"):
+        st.sidebar.success("🟢 Authenticated Admin Active")
+        if st.sidebar.button("🚪 Log Out of System Panel"):
             st.session_state["authenticated"] = False
             st.session_state['active_image_stream'] = None
             st.rerun()
             
         # ------------------------------------------------------------
-        # 📁 LEFT COLLAPSIBLE PAST ARTICLES MANAGER SIDEBAR PANEL
+        # 📁 SIDEBAR HISTORICAL SEARCH & ARTIFACT SELECTION ENGINE
         # ------------------------------------------------------------
         st.sidebar.markdown("---")
-        st.sidebar.subheader("📁 పాత కథనాలు (Manage Past Articles)")
+        st.sidebar.subheader("📁 పాత వార్తలు (History Manager)")
         
-        # Search filter field inside left panel to track down titles quickly
-        admin_search_query = st.sidebar.text_input("🔍 వెతకండి (Search historical articles):", placeholder="Type title keyword...", key="adm_search_past_field").strip()
+        admin_search_query = st.sidebar.text_input("🔍 వెతకండి (Search past article title):", placeholder="Type title keywords...").strip()
         
-        # Build out select index mapping records dynamically
-        editor_map = {"--- ➕ Create New Article (కొత్త వార్తను రాయండి) ---": None}
-        
+        editor_map = {"--- ➕ Create New Article (కొత్త వార్త రాయండి) ---": None}
         for headline, file in all_articles.items():
-            if admin_search_query and admin_search_query.lower() not in headline.lower():
-                continue
+            if admin_search_query and admin_search_query.lower() not in headline.lower(): continue
             editor_map[headline] = file
             
-        selected_headline = st.sidebar.radio("సవరించడానికి వార్తను ఎంచుకోండి (Select to Edit):", list(editor_map.keys()))
+        selected_headline = st.sidebar.radio("Choose Article to Load:", list(editor_map.keys()))
         active_file = editor_map[selected_headline]
         is_edit_mode = active_file is not None
 
         if is_edit_mode:
-            with open(os.path.join(SAVE_FOLDER, active_file), "r", encoding="utf-8") as f:
-                loaded_data = json.load(f)
+            with open(os.path.join(SAVE_FOLDER, active_file), "r", encoding="utf-8") as f: loaded_data = json.load(f)
             default_headline = loaded_data.get("headline", "")
             default_sub_header = loaded_data.get("sub_header", "")
             default_body = loaded_data.get("content", "")
@@ -178,8 +173,7 @@ if is_admin_url:
             default_image_log = loaded_data.get("associated_image", "")
             page_header = f"📝 Editing Past Article: {selected_headline}"
             button_label = "💾 Update and Save Changes to This Article"
-            if default_image_log and not st.session_state['active_image_stream']: 
-                st.session_state['active_image_stream'] = default_image_log
+            if default_image_log and not st.session_state['active_image_stream']: st.session_state['active_image_stream'] = default_image_log
         else:
             default_headline = ""
             default_sub_header = ""
@@ -190,7 +184,7 @@ if is_admin_url:
             page_header = "➕ Create and Format a New Article"
             button_label = "🚀 Publish and Save New Article to Archives"
 
-        # Render the input fields inside main area layout
+        # Content Form Layout Canvas Fields
         st.markdown(f"### {page_header}")
         headline_input = st.text_input(label="Main Headline:", value=default_headline, key="main_head_form")
         sub_header_input = st.text_input(label="Sub-Header Option (Optional):", value=default_sub_header, key="sub_head_form")
@@ -228,33 +222,26 @@ if is_admin_url:
         # ------------------------------------------------------------
         st.write("### 💾 Database Control Actions")
         col_save, col_delete = st.columns([0.5, 0.5])
-        
         with col_save:
             if st.button(button_label, type="primary", use_container_width=True, key="save_art_btn"):
-                if not headline_input.strip(): 
-                    st.error("❌ Heading cannot be blank!")
+                if not headline_input.strip(): st.error("❌ Heading cannot be blank!")
                 else:
                     timestamp_str = active_file.replace("article_", "").replace(".json", "") if is_edit_mode else datetime.now().strftime("%Y%m%d_%H%M%S")
                     file_path = f"{SAVE_FOLDER}/article_{timestamp_str}.json"
                     article_data = {"headline": headline_input, "sub_header": sub_header_input, "category": category_input, "content": body_input, "date": date_input, "associated_image": st.session_state['active_image_stream'] if st.session_state['active_image_stream'] else "", "exported_at": timestamp_str}
-                    with open(file_path, "w", encoding="utf-8") as f: 
-                        json.dump(article_data, f, ensure_ascii=False, indent=4)
+                    with open(file_path, "w", encoding="utf-8") as f: json.dump(article_data, f, ensure_ascii=False, indent=4)
                     st.success("🎉 Article Saved and Synced Successfully!")
                     st.session_state['active_image_stream'] = None
                     st.rerun()
-                    
         with col_delete:
             if is_edit_mode:
-                # Upgraded action button allows deleting data rows permanently from the storage base folder stream
                 if st.button("🗑️ Delete This Article Permanently (తొలగించండి)", type="secondary", use_container_width=True, key="del_art_btn"):
                     file_to_remove = os.path.join(SAVE_FOLDER, active_file)
-                    if os.path.exists(file_to_remove): 
-                        os.remove(file_to_remove)
+                    if os.path.exists(file_to_remove): os.remove(file_to_remove)
                     st.session_state['active_image_stream'] = None
-                    st.success("💥 Article Deleted Permanent from Local Core Files!")
+                    st.success("💥 Article Deleted!")
                     st.rerun()
-            else:
-                st.button("🗑️ Delete Option Unavailable", disabled=True, use_container_width=True, key="disabled_del_btn")
+            else: st.button("🗑️ Delete Option Unavailable", disabled=True, use_container_width=True, key="disabled_del_btn")
 
         st.markdown("---")
         st.write("### 👀 Live Layout Preview:")
@@ -267,7 +254,6 @@ if is_admin_url:
             with col_p_text: st.write(body_input)
             with col_p_photo:
                 if st.session_state['active_image_stream']: st.image(st.session_state['active_image_stream'], use_container_width=True)
-
 # --------------------------------------------------------------------
 # CONFIGURATION B: STANDARD PUBLIC PORTAL NEWS READER VIEW
 # --------------------------------------------------------------------
