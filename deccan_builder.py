@@ -191,58 +191,57 @@ if is_admin_url:
         body_input = st.text_area(label="News Content:", value=default_body, height=200, key="body_txt_form")
         date_input = st.text_input(label="Publish Date:", value=default_date, key="pub_date_form")
 
+        st.write("### 🖼️ Layout Photo Settings")
+        image_option = st.radio("Choose Image Input Method:", ("📋 Paste Copied Photo (Ctrl+V)", "📤 Upload Local File from Device", "Use Web Image URL"))
+        pasted_stream_result = None
 
-    st.write("### 🖼️ Layout Photo Settings")
-    image_option = st.radio("Choose Image Input Method:", ("📋 Paste Copied Photo (Ctrl+V)", "📤 Upload Local File from Device", "Use Web Image URL"))
-    pasted_stream_result = None
+        if image_option == "📋 Paste Copied Photo (Ctrl+V)":
+            pasted_stream_result = st.components.v1.html('<div id="c-paste" style="border:2px dashed #999; padding:20px; text-align:center;">[ CLICK HERE & CTRL+V ]</div><script>document.addEventListener("paste",function(e){var items=e.clipboardData.items;for(var i=0;i<items.length;i++){if(items[i].type.indexOf("image")!==-1){var blob=items[i].getAsFile();var reader=new FileReader();reader.onload=function(ev){window.parent.postMessage({type:"streamlit:setComponentValue",value:ev.target.result},"*");};reader.readAsDataURL(blob);}}});</script>', height=95)
+            if pasted_stream_result:
+                try:
+                    val = pasted_stream_result.value if hasattr(pasted_stream_result, 'value') else pasted_stream_result
+                    if isinstance(val, str) and val.startswith("data:image"): st.session_state['active_image_stream'] = val
+                except Exception: pass
+        elif image_option == "📤 Upload Local File from Device":
+            file_device_upload = st.file_uploader("Select image file:", type=["jpg", "jpeg", "png"])
+            if file_device_upload: st.session_state['active_image_stream'] = convert_file_to_cache_data(file_device_upload)
+        else:
+            initial_url = default_image_log if default_image_log and default_image_log.startswith("http") else "https://unsplash.com"
+            image_url = st.text_input("Paste Image URL:", value=initial_url, key="img_url_form")
+            if image_url: st.session_state['active_image_stream'] = image_url
 
-    if image_option == "📋 Paste Copied Photo (Ctrl+V)":
-        pasted_stream_result = st.components.v1.html('<div id="c-paste" style="border:2px dashed #999; padding:20px; text-align:center;">[ CLICK HERE & CTRL+V ]</div><script>document.addEventListener("paste",function(e){var items=e.clipboardData.items;for(var i=0;i<items.length;i++){if(items[i].type.indexOf("image")!==-1){var blob=items[i].getAsFile();var reader=new FileReader();reader.onload=function(ev){window.parent.postMessage({type:"streamlit:setComponentValue",value:ev.target.result},"*");};reader.readAsDataURL(blob);}}});</script>', height=95)
-        if pasted_stream_result:
-            try:
-                val = pasted_stream_result.value if hasattr(pasted_stream_result, 'value') else pasted_stream_result
-                if isinstance(val, str) and val.startswith("data:image"): st.session_state['active_image_stream'] = val
-            except Exception: pass
-    elif image_option == "📤 Upload Local File from Device":
-        file_device_upload = st.file_uploader("Select image file:", type=["jpg", "jpeg", "png"])
-        if file_device_upload: st.session_state['active_image_stream'] = convert_file_to_cache_data(file_device_upload)
-    else:
-        initial_url = default_image_log if default_image_log and default_image_log.startswith("http") else "https://unsplash.com"
-        image_url = st.text_input("Paste Image URL:", value=initial_url, key="img_url_form")
-        if image_url: st.session_state['active_image_stream'] = image_url
+        st.write("### 💾 Database Control Actions")
+        col_save, col_delete = st.columns([0.7, 0.3])
+        with col_save:
+            if st.button(button_label, use_container_width=True, key="save_art_btn"):
+                if not headline_input.strip(): st.error("❌ Heading cannot be blank!")
+                else:
+                    timestamp_str = active_file.replace("article_", "").replace(".json", "") if is_edit_mode else datetime.now().strftime("%Y%m%d_%H%M%S")
+                    file_path = f"{SAVE_FOLDER}/article_{timestamp_str}.json"
+                    article_data = {"headline": headline_input, "sub_header": sub_header_input, "category": category_input, "content": body_input, "date": date_input, "associated_image": st.session_state['active_image_stream'] if st.session_state['active_image_stream'] else "", "exported_at": timestamp_str}
+                    with open(file_path, "w", encoding="utf-8") as f: json.dump(article_data, f, ensure_ascii=False, indent=4)
+                    st.success("🎉 Article Saved and Synced Successfully!")
+                    st.session_state['active_image_stream'] = None
+                    st.rerun()
+        with col_delete:
+            if is_edit_mode:
+                if st.button("🗑️ Delete This Article Permanently", type="secondary", use_container_width=True, key="del_art_btn"):
+                    file_to_remove = os.path.join(SAVE_FOLDER, active_file)
+                    if os.path.exists(file_to_remove): os.remove(file_to_remove)
+                    st.success("💥 Article Deleted!")
+                    st.rerun()
 
-    st.write("### 💾 Database Control Actions")
-    col_save, col_delete = st.columns([0.7, 0.3])
-    with col_save:
-        if st.button(button_label, use_container_width=True, key="save_art_btn"):
-            if not headline_input.strip(): st.error("❌ Heading cannot be blank!")
-            else:
-                timestamp_str = active_file.replace("article_", "").replace(".json", "") if is_edit_mode else datetime.now().strftime("%Y%m%d_%H%M%S")
-                file_path = f"{SAVE_FOLDER}/article_{timestamp_str}.json"
-                article_data = {"headline": headline_input, "sub_header": sub_header_input, "category": category_input, "content": body_input, "date": date_input, "associated_image": st.session_state['active_image_stream'] if st.session_state['active_image_stream'] else "", "exported_at": timestamp_str}
-                with open(file_path, "w", encoding="utf-8") as f: json.dump(article_data, f, ensure_ascii=False, indent=4)
-                st.success("🎉 Article Saved and Synced Successfully!")
-                st.session_state['active_image_stream'] = None
-                st.rerun()
-    with col_delete:
-        if is_edit_mode:
-            if st.button("🗑️ Delete This Article Permanently", type="secondary", use_container_width=True, key="del_art_btn"):
-                file_to_remove = os.path.join(SAVE_FOLDER, active_file)
-                if os.path.exists(file_to_remove): os.remove(file_to_remove)
-                st.success("💥 Article Deleted!")
-                st.rerun()
-
-    st.markdown("---")
-    st.write("### 👀 Live Layout Preview:")
-    with st.container(border=True):
-        if headline_input: st.markdown(f"## {headline_input}")
-        if sub_header_input: st.markdown(f"#### *{sub_header_input}*")
-        st.caption(f"📅 తేదీ: {date_input} | 🏷️ వర్గం: {category_input}")
         st.markdown("---")
-        col_p_text, col_p_photo = st.columns([0.65, 0.35], gap="large")
-        with col_p_text: st.write(body_input)
-        with col_p_photo:
-            if st.session_state['active_image_stream']: st.image(st.session_state['active_image_stream'], use_container_width=True)
+        st.write("### 👀 Live Layout Preview:")
+        with st.container(border=True):
+            if headline_input: st.markdown(f"## {headline_input}")
+            if sub_header_input: st.markdown(f"#### *{sub_header_input}*")
+            st.caption(f"📅 తేదీ: {date_input} | 🏷️ వర్గం: {category_input}")
+            st.markdown("---")
+            col_p_text, col_p_photo = st.columns([0.65, 0.35], gap="large")
+            with col_p_text: st.write(body_input)
+            with col_p_photo:
+                if st.session_state['active_image_stream']: st.image(st.session_state['active_image_stream'], use_container_width=True)
 
 # --------------------------------------------------------------------
 # CONFIGURATION B: STANDARD PUBLIC PORTAL NEWS READER VIEW
