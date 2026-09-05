@@ -217,9 +217,7 @@ if is_admin_url:
             image_url = st.text_input("Paste Image URL:", value=initial_url, key="img_url_form")
             if image_url: st.session_state['active_image_stream'] = image_url
 
-        # ------------------------------------------------------------
-        # 💾 SIDE-BY-SIDE CONTROL ACTION BUTTONS (Publish vs Delete Permanent)
-        # ------------------------------------------------------------
+        # Database Action Save vs Erase Row Buttons
         st.write("### 💾 Database Control Actions")
         col_save, col_delete = st.columns([0.5, 0.5])
         with col_save:
@@ -254,6 +252,7 @@ if is_admin_url:
             with col_p_text: st.write(body_input)
             with col_p_photo:
                 if st.session_state['active_image_stream']: st.image(st.session_state['active_image_stream'], use_container_width=True)
+
 # --------------------------------------------------------------------
 # CONFIGURATION B: STANDARD PUBLIC PORTAL NEWS READER VIEW
 # --------------------------------------------------------------------
