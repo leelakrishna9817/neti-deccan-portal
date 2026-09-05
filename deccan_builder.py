@@ -50,10 +50,122 @@ for file in saved_files:
         continue
 
 # ====================================================================
+# 🎨 GLOBAL BRAND STYLING & CORE UTILITY HOOKS (SHARED MASTHEAD HOOKS)
+# ====================================================================
+st.markdown(
+    """
+    <style>
+        /* UPGRADE 1: Drastically decreases the white empty space between top window and your logo */
+        .block-container {
+            padding-top: 0.5rem !important;
+            padding-bottom: 2rem !important;
+        }
+        
+        /* Forceful removal of default cloud server tools on the public portal */
+        iframe[src*="host-service"], iframe[title="Manage app"], [data-testid="stDeploymentButton"], footer, [data-testid="stHeader"] {
+            display: none !important; visibility: hidden !important; height: 0px !important; opacity: 0 !important;
+        }
+        
+        .news-card-anchor { text-decoration: none !important; color: inherit !important; display: block !important; margin-bottom: 15px; }
+        
+        .news-clickable-box {
+            border: 1px solid #e2e8f0; padding: 18px; border-radius: 6px; background-color: #ffffff; transition: box-shadow 0.2s, border-color 0.2s; margin-bottom: 15px;
+        }
+        .news-clickable-box:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.06); border-color: #cbd5e1; background-color: #fafafa; }
+        
+        .sidebar-clickable-card {
+            border: 1px solid #e2e8f0; padding: 10px; border-radius: 4px; background-color: #ffffff; margin-bottom: 10px; transition: background-color 0.2s;
+        }
+        .sidebar-clickable-card:hover { background-color: #fafafa; border-color: #cbd5e1; }
+        
+        .logo-english-sub {
+            font-size: 20px;
+            font-weight: 700;
+            color: #444444;
+            letter-spacing: 5px;
+            margin: 4px 0 0 0;
+            padding-left: 5px;
+            font-family: Arial, sans-serif;
+        }
+        
+        .breaking-marquee-box {
+            background-color: #fff8f8;
+            border-top: 1px solid #ffcdd2;
+            border-bottom: 1px solid #ffcdd2;
+            padding: 6px 0;
+            margin-top: 10px;
+            margin-bottom: 25px;
+        }
+        .marquee-text-style {
+            font-size: 18px;
+            font-weight: 700;
+            color: #c62828;
+            font-family: sans-serif;
+        }
+        
+        /* UPGRADE 2: Premium CSS layout mapping for your new enlarged clickable e-paper box button card */
+        .custom-epaper-btn {
+            background-color: #f8fafc;
+            border: 2px solid #0d47a1;
+            border-radius: 6px;
+            padding: 12px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            cursor: pointer;
+            text-decoration: none !important;
+            transition: background-color 0.2s, transform 0.1s;
+            margin-bottom: 15px;
+        }
+        .custom-epaper-btn:hover {
+            background-color: #f1f5f9;
+            transform: translateY(-1px);
+        }
+        .custom-epaper-btn-icon {
+            font-size: 26px;
+            margin-right: 14px;
+        }
+        .custom-epaper-btn-text {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0d47a1;
+            font-family: Arial, sans-serif;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+def render_unified_branding_masthead():
+    """UPGRADE 3: Compiles the exact same graphic title logo banner and marquee scroll across BOTH faces."""
+    if os.path.exists("official_logo.png"):
+        st.image("official_logo.png", width=320)
+    else:
+        st.markdown("<h1 style='color:#0d47a1; font-size:48px; margin:0;'>డెక్కన్</h1><p style='color:#d32f2f; margin:0;'>ప్రజలకు, अधिकारियोंకు మధ్య వారధి</p>", unsafe_allow_html=True)
+        
+    st.markdown("<div class='logo-english-sub'>NETIDECCAN</div>", unsafe_allow_html=True)
+    
+    st.markdown(
+        """
+        <div class='breaking-marquee-box'>
+            <marquee behavior='scroll' direction='left' scrollamount='6'>
+                <span class='marquee-text-style'>
+                    🔥 నేటి డెక్కన్ వార్తలకు స్వాగతం తాజా రాజకీయ, ఆర్థిక, క్రీడా వార్తలు మీ కోసం ప్రతి క్షణం నిజమైన సమాచారం నేటి డెక్కన్ – మీ నమ్మకమైన వార్తా వేదిక.
+                </span>
+            </marquee>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+# ====================================================================
 # FACE 1: PRIVATE EDITING WORKSPACE GATEWAY (Activated via ?mode=admin)
 # ====================================================================
 if is_admin_url:
-    st.markdown("<div style='text-align:center;'><h2>నేటి డెక్కన్ - EDIT CONTROL PANEL</h2></div><hr>", unsafe_allow_html=True)
+    # Render the identical graphic brand title and ticking marquee here on the admin canvas
+    render_unified_branding_masthead()
+    
+    st.markdown("<div style='background-color:#f1f5f9; padding:10px; border-radius:4px; text-align:center;'><h4>✍️ నేటి డెక్కన్ - EDIT CONTROL PANEL</h4></div><br>", unsafe_allow_html=True)
     
     st.sidebar.title("🔐 Secure Login Gateway")
     if not st.session_state["authenticated"]:
@@ -114,73 +226,49 @@ if is_admin_url:
             if image_url:
                 st.session_state['active_image_stream'] = image_url
 
-        if st.button("🚀 Save and Publish Article", use_container_width=True):
-            if not headline_input.strip():
-                st.error("❌ Heading cannot be blank!")
-            else:
-                timestamp_str = active_file.replace("article_", "").replace(".json", "") if is_edit_mode else datetime.now().strftime("%Y%m%d_%H%M%S")
-                file_path = f"{SAVE_FOLDER}/article_{timestamp_str}.json"
-                article_data = {"headline": headline_input, "sub_header": sub_header_input, "content": body_input, "date": date_input, "associated_image": st.session_state['active_image_stream'] if st.session_state['active_image_stream'] else "", "exported_at": timestamp_str}
-                with open(file_path, "w", encoding="utf-8") as f:
-                    json.dump(article_data, f, ensure_ascii=False, indent=4)
-                st.success("🎉 Article Published!")
-                st.session_state['active_image_stream'] = None
-                st.rerun()
+        st.write("### 💾 Database Control Actions")
+        col_save, col_delete = st.columns([0.7, 0.3])
+        
+        with col_save:
+            if st.button(button_label, use_container_width=True, key="save_art_btn"):
+                if not headline_input.strip():
+                    st.error("❌ Heading cannot be blank!")
+                else:
+                    timestamp_str = active_file.replace("article_", "").replace(".json", "") if is_edit_mode else datetime.now().strftime("%Y%m%d_%H%M%S")
+                    file_path = f"{SAVE_FOLDER}/article_{timestamp_str}.json"
+                    article_data = {"headline": headline_input, "sub_header": sub_header_input, "content": body_input, "date": date_input, "associated_image": st.session_state['active_image_stream'] if st.session_state['active_image_stream'] else "", "exported_at": timestamp_str}
+                    with open(file_path, "w", encoding="utf-8") as f:
+                        json.dump(article_data, f, ensure_ascii=False, indent=4)
+                    st.success("🎉 Article Published!")
+                    st.session_state['active_image_stream'] = None
+                    st.rerun()
+
+        with col_delete:
+            if is_edit_mode:
+                if st.button("🗑️ Delete This Article Permanently", type="secondary", use_container_width=True, key="del_art_btn"):
+                    file_to_remove = os.path.join(SAVE_FOLDER, active_file)
+                    if os.path.exists(file_to_remove):
+                        os.remove(file_to_remove)
+                        st.session_state['active_image_stream'] = None
+                        st.rerun()
+
+        # Admin Live Workspace Layout Preview Container Box
+        st.markdown("---")
+        st.write("### 👀 Live Layout Preview:")
+        with st.container(border=True):
+            if headline_input: st.markdown(f"## {headline_input}")
+            if sub_header_input: st.markdown(f"#### *{sub_header_input}*")
+            st.caption(f"📅 తేదీ: {date_input}")
+            st.markdown("---")
+            col_p_text, col_p_photo = st.columns([0.65, 0.35], gap="large")
+            with col_p_text: st.write(body_input)
+            with col_p_photo:
+                if st.session_state['active_image_stream']: st.image(st.session_state['active_image_stream'], use_container_width=True)
 
 # ====================================================================
-# FACE 2: PREMIUM PUBLIC NEWS READER (Real Logo Branding + Marquee Scroll)
+# FACE 2: PREMIUM PUBLIC NEWS READER (The Viewers Face)
 # ====================================================================
 else:
-    st.markdown(
-        """
-        <style>
-            /* Forceful removal of developer tools and gray workspace frame headers */
-            iframe[src*="host-service"], iframe[title="Manage app"], [data-testid="stDeploymentButton"], footer, [data-testid="stHeader"] {
-                display: none !important; visibility: hidden !important; height: 0px !important; opacity: 0 !important;
-            }
-            .news-card-anchor { text-decoration: none !important; color: inherit !important; display: block !important; margin-bottom: 15px; }
-            
-            .news-clickable-box {
-                border: 1px solid #e2e8f0; padding: 18px; border-radius: 6px; background-color: #ffffff; transition: box-shadow 0.2s, border-color 0.2s; margin-bottom: 15px;
-            }
-            .news-clickable-box:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.06); border-color: #cbd5e1; background-color: #fafafa; }
-            
-            .sidebar-clickable-card {
-                border: 1px solid #e2e8f0; padding: 10px; border-radius: 4px; background-color: #ffffff; margin-bottom: 10px; transition: background-color 0.2s;
-            }
-            .sidebar-clickable-card:hover { background-color: #fafafa; border-color: #cbd5e1; }
-            
-            /* Custom English branding subheader alignment below real logo asset */
-            .logo-english-sub {
-                font-size: 20px;
-                font-weight: 700;
-                color: #444444;
-                letter-spacing: 5px;
-                margin: 4px 0 0 0;
-                padding-left: 5px;
-                font-family: Arial, sans-serif;
-            }
-            
-            /* Single row marquee welcome text container box layout configuration rules */
-            .breaking-marquee-box {
-                background-color: #fff8f8;
-                border-top: 1px solid #ffcdd2;
-                border-bottom: 1px solid #ffcdd2;
-                padding: 6px 0;
-                margin-top: 10px;
-                margin-bottom: 25px;
-            }
-            .marquee-text-style {
-                font-size: 18px;
-                font-weight: 700;
-                color: #c62828;
-                font-family: sans-serif;
-            }
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
-
     # ----------------------------------------------------------------
     # SUBPAGE CONTROLLER: SINGLE ARTICLE VIEWER PAGE
     # ----------------------------------------------------------------
@@ -214,40 +302,27 @@ else:
     # MAIN PORTAL HOMEPAGE: BRANDED TOP MASTHEAD + LIVE MARQUEE SCROLL
     # ----------------------------------------------------------------
     else:
-        # STEP 1: Renders your real official image logo matching your exact colors and fonts
-        if os.path.exists("official_logo.png"):
-            st.image("official_logo.png", width=320)
-        else:
-            # Safe text backup fallback if the image file hasn't been uploaded to GitHub yet
-            st.markdown("<h1 style='color:#0d47a1; font-size:48px; margin:0;'>డెక్కన్</h1><p style='color:#d32f2f; margin:0;'>ప్రజలకు, अधिकारियोंకు మధ్య వారధి</p>", unsafe_allow_html=True)
-            
-        # STEP 2: Renders English text token right below the real logo image
-        st.markdown("<div class='logo-english-sub'>NETIDECCAN</div>", unsafe_allow_html=True)
+        # Render the standard shared branding masthead on top
+        render_unified_branding_masthead()
         
-        # STEP 3: Single-Row Horizontal Marquee Ticker Welcome Text
-        st.markdown(
-            """
-            <div class='breaking-marquee-box'>
-                <marquee behavior='scroll' direction='left' scrollamount='6'>
-                    <span class='marquee-text-style'>
-                        🔥 నేటి డెక్కన్ వార్తలకు స్వాగతం తాజా రాజకీయ, ఆర్థిక, క్రీడా వార్తలు మీ కోసం ప్రతి క్షణం నిజమైన సమాచారం నేటి డెక్కన్ – మీ నమ్మకమైన వార్తా వేదిక.
-                    </span>
-                </marquee>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-        
-        # Control row setup
-        col_ctrl_btn, col_ctrl_search = st.columns([0.22, 0.78], gap="large")
+        # Upper control layout row: Render updated enlarged clickable e-paper block and search bar side-by-side
+        col_ctrl_btn, col_ctrl_search = st.columns([0.35, 0.65], gap="large")
         with col_ctrl_btn:
-            st.link_button("📰 Read Print E-Paper", "http://netideccan.com", use_container_width=True)
+            st.markdown(
+                """
+                <a href="http://netideccan.com" class="custom-epaper-btn" target="_blank">
+                    <span class="custom-epaper-btn-icon">📰</span>
+                    <span class="custom-epaper-btn-text">Read Print E-Paper</span>
+                </a>
+                """,
+                unsafe_allow_html=True
+            )
         with col_ctrl_search:
             search_query = st.text_input("🔍 వెతకండి (Search news by headline keyword):", placeholder="Type keywords here to filter articles...", key="news_search_reader_field").strip()
             
         st.markdown("<br>", unsafe_allow_html=True)
 
-        # STEP 4: Split main canvas grid layout (70% Center Main News feed, 30% Right Sidebar Feed)
+        # Split lower screen area (70% Center Main News feed, 30% Right Sidebar Feed)
         col_center_news, col_right_trending = st.columns([0.68, 0.32], gap="large")
         
         # COLUMN A: Center Breaking News
@@ -337,7 +412,3 @@ else:
                     )
             else:
                 st.caption("No trending headlines recorded in archives yet.")
-
-# 9. FOOTER STATUS BAR MONITOR
-st.markdown("---")
-st.caption("📰 **నేటి డెక్కన్ (Neti Deccan) Public News Portal Engine v5.5**")
