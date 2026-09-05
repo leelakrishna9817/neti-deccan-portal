@@ -53,7 +53,6 @@ for file in saved_files:
 # FACE 1: PRIVATE EDITING WORKSPACE GATEWAY (Activated via ?mode=admin)
 # ====================================================================
 if is_admin_url:
-    # 🏛️ Standard centered header for the administrative workspace view face
     st.markdown("<div style='text-align:center;'><h2>నేటి డెక్కన్ - EDIT CONTROL PANEL</h2></div><hr>", unsafe_allow_html=True)
     
     st.sidebar.title("🔐 Secure Login Gateway")
@@ -129,32 +128,29 @@ if is_admin_url:
                 st.rerun()
 
 # ====================================================================
-# FACE 2: PREMIUM PUBLIC NEWS READER (Top-Left Title + Scrollable Columns)
+# FACE 2: PREMIUM PUBLIC NEWS READER (Triple Column Grid Setup)
 # ====================================================================
 else:
-    # UPGRADED ADVANCED CSS: Moves Title to Top-Left, creates side-by-side grids, and hides dev app bars completely
     st.markdown(
         """
         <style>
+            /* Forceful removal of developer tools and gray workspace frame headers */
             iframe[src*="host-service"], iframe[title="Manage app"], [data-testid="stDeploymentButton"], footer, [data-testid="stHeader"] {
                 display: none !important; visibility: hidden !important; height: 0px !important; opacity: 0 !important;
             }
             .news-card-anchor { text-decoration: none !important; color: inherit !important; display: block !important; margin-bottom: 15px; }
             
-            /* Horizontal Scroll Tracker Styling */
-            .horizontal-scroll-container {
-                display: flex !important; overflow-x: auto !important; white-space: nowrap !important; gap: 15px !important; padding: 10px 0 !important; scroll-behavior: smooth;
+            .news-clickable-box {
+                border: 1px solid #e2e8f0; padding: 18px; border-radius: 6px; background-color: #ffffff; transition: box-shadow 0.2s, border-color 0.2s; margin-bottom: 15px;
             }
-            .horizontal-scroll-container::-webkit-scrollbar { height: 6px; }
-            .horizontal-scroll-container::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+            .news-clickable-box:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.06); border-color: #cbd5e1; background-color: #fafafa; }
             
-            .scroll-card-box {
-                inline-size: 260px; min-width: 260px; background: #fff; border: 1px solid #e2e8f0; padding: 12px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); transition: transform 0.2s;
+            .sidebar-clickable-card {
+                border: 1px solid #e2e8f0; padding: 10px; border-radius: 4px; background-color: #ffffff; margin-bottom: 10px; transition: background-color 0.2s;
             }
-            .scroll-card-box:hover { transform: translateY(-3px); box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
+            .sidebar-clickable-card:hover { background-color: #fafafa; border-color: #cbd5e1; }
             
-            /* Left Sidebar Masthead Typography layout configuration mapping rules */
-            .left-branding-title { font-size: 42px; font-weight: 900; color: #000000; margin: 0; padding: 0; line-height: 1.1; }
+            .left-branding-title { font-size: 42px; font-weight: 900; color: #000000; margin: 0; padding: 0; line-height: 1.1; font-family: sans-serif; }
             .left-branding-sub { font-size: 18px; font-weight: 600; color: #555; letter-spacing: 2px; margin-top: 5px; }
         </style>
         """,
@@ -162,7 +158,7 @@ else:
     )
 
     # ----------------------------------------------------------------
-    # SUBPAGE CONTROLLER: ARTICLE FULL VIEW PAGE RENDER
+    # SUBPAGE CONTROLLER: SINGLE ARTICLE VIEWER PAGE
     # ----------------------------------------------------------------
     if current_viewing_file is not None:
         if not os.path.exists(os.path.join(SAVE_FOLDER, current_viewing_file)):
@@ -177,6 +173,8 @@ else:
             st.rerun()
             
         st.markdown(f"<h1 style='font-size:36px; font-weight:800; color:#000; margin-top:15px;'>{full_art.get('headline')}</h1>", unsafe_allow_html=True)
+        if full_art.get('sub_header'):
+            st.markdown(f"<h3 style='color:#555; font-style:italic; font-size:18px; margin-top:4px;'>{full_art.get('sub_header')}</h3>", unsafe_allow_html=True)
         st.caption(f"📅 తేదీ: {full_art.get('date')}")
         st.markdown("<hr style='border-top:2px solid #222;'>", unsafe_allow_html=True)
         
@@ -185,18 +183,18 @@ else:
             st.markdown(f"<p style='font-size:18px; line-height:1.75;'>{full_art.get('content')}</p>", unsafe_allow_html=True)
         with c_r:
             f_img = full_art.get('associated_image')
-            if f_img:
+            if f_img and isinstance(f_img, str) and (f_img.startswith("http") or f_img.startswith("data:image")):
                 st.image(f_img, use_container_width=True)
 
     # ----------------------------------------------------------------
-    # MAIN PORTAL HOMEPAGE: UPGRADED TOP-LEFT TITLE + HORIZONTAL SCROLL COLUMNS
+    # MAIN PORTAL HOMEPAGE: TRIPLE COLUMN GRID LAYOUT (Left, Center, Right)
     # ----------------------------------------------------------------
     else:
-        # Split screen into a Top-Left Branding Block (25%) and Content Blocks (75%)
-        col_brand_left, col_news_right = st.columns([0.25, 0.75], gap="large")
+        # Split the screen width layout canvas into 3 functional distinct section columns
+        col_left_masthead, col_center_news, col_right_trending = st.columns([0.22, 0.50, 0.28], gap="large")
         
-        with col_brand_left:
-            # Top-Left Branding Masthead Box
+        # COLUMN 1: Left-Anchored Sticky Title Masthead Box
+        with col_left_masthead:
             st.markdown(
                 """
                 <div style='background-color: #fcfcfc; padding: 20px; border-left: 5px solid #c00000; border-radius: 4px; position: sticky; top: 20px;'>
@@ -208,44 +206,17 @@ else:
                 """,
                 unsafe_allow_html=True
             )
-            st.write("") # Spacer
-            search_query = st.text_input("🔍 వెతకండి (Search Headline):", placeholder="Type keywords...").strip()
+            st.write("") 
+            # Link point shortcut leading readers right back to your core website e-paper section panel
+            st.link_button("📰 Read Print E-Paper", "http://netideccan.com", use_container_width=True)
+            search_query = st.text_input("🔍 వెతకండి (Search news):", placeholder="Type keywords...", key="reader_search_box").strip()
 
-        with col_news_right:
-            st.markdown("<h3 style='margin-top:0; font-weight:800; color:#c00000; border-bottom:2px solid #c00000; padding-bottom:5px;'>📰 తాజా ముఖ్యాంశాలు (Latest News updates)</h3>", unsafe_allow_html=True)
-            st.write("") # Spacer
+        # COLUMN 2: Center Main Breaking News Feed (Yellow Box Click-Anywhere Cards)
+        with col_center_news:
+            st.markdown("<h3 style='margin-top:0; font-weight:800; border-bottom:2px solid #333; padding-bottom:5px;'>📰 తాజా వార్తలు (Latest News Updates)</h3>", unsafe_allow_html=True)
+            st.write("") 
             
             if all_articles:
-                st.markdown("#### 🔄 స్క్రోల్ చేయండి (Swipe / Scroll horizontally to browse articles):")
-                
-                scroll_cards_html = ""
-                for headline, file in all_articles.items():
-                    if search_query and search_query.lower() not in headline.lower():
-                        continue
-                        
-                    with open(os.path.join(SAVE_FOLDER, file), "r", encoding="utf-8") as f:
-                        art = json.load(f)
-                        
-                    s_head = art.get("headline", "")
-                    s_date = art.get("date", "")
-                    s_img = art.get("associated_image", "https://unsplash.com")
-                    if not s_img.startswith("http") and not s_img.startswith("data:image"):
-                        s_img = "https://unsplash.com"
-                    
-                    scroll_cards_html += f"""
-                    <a href="?article={file}" target="_self" class="news-card-anchor">
-                        <div class="scroll-card-box">
-                            <img src="{s_img}" style="width:100%; height:130px; object-fit:cover; border-radius:4px; margin-bottom:8px;"/>
-                            <p style="font-size:14px; font-weight:700; color:#111; line-height:1.3; white-space:normal; height:55px; overflow:hidden;">{s_head[:65]}...</p>
-                            <span style="font-size:11px; color:#888;">📅 {s_date}</span>
-                        </div>
-                    </a>
-                    """
-                
-                st.markdown(f'<div class="horizontal-scroll-container">{scroll_cards_html}</div>', unsafe_allow_html=True)
-                st.markdown("<br><hr><br>", unsafe_allow_html=True)
-                
-                st.markdown("#### 📌 అన్ని ప్రధాన వార్తలు (All Published News Grid):")
                 for headline, file in all_articles.items():
                     if search_query and search_query.lower() not in headline.lower():
                         continue
@@ -259,23 +230,24 @@ else:
                     arc_date = art.get("date", "")
                     arc_image = art.get("associated_image", "")
                     
-                    news_snippet = arc_content[:150] + "..." if len(arc_content) > 150 else arc_content
-                    img_tag_html = f'<img src="{arc_image}" style="width:100%; max-height:150px; object-fit:cover; border-radius:4px;"/>' if arc_image else ''
-                    sub_tag_html = f'<p style="color:#555; font-style:italic; font-size:14px; margin-top:2px;">{arc_sub_header}</p>' if arc_sub_header else ''
+                    news_snippet = arc_content[:140] + "..." if len(arc_content) > 140 else arc_content
+                    img_tag_html = f'<img src="{arc_image}" style="width:100%; max-height:140px; object-fit:cover; border-radius:4px;"/>' if arc_image else ''
+                    sub_tag_html = f'<p style="color:#555; font-style:italic; font-size:14px; margin-top:2px; margin-bottom:4px;">{arc_sub_header}</p>' if arc_sub_header else ''
                     
+                    # Core Click-Anywhere News Grid Container card row setup
                     st.markdown(
                         f"""
                         <a href="?article={file}" target="_self" class="news-card-anchor">
                             <div class="news-clickable-box">
                                 <table style="width:100%; border-collapse:collapse; border:none;">
                                     <tr>
-                                        <td style="width:70%; vertical-align:top; border:none; padding:0; padding-right:15px;">
-                                            <h4 style="color:#000; font-weight:700; margin:0; font-size:20px; line-height:1.3;">{arc_headline}</h4>
+                                        <td style="width:68%; vertical-align:top; border:none; padding:0; padding-right:15px;">
+                                            <h4 style="color:#000; font-weight:700; margin:0; font-size:21px; line-height:1.3;">{arc_headline}</h4>
                                             {sub_tag_html}
                                             <p style="color:#999; font-size:11px; margin:4px 0;">📅 తేదీ: {arc_date}</p>
                                             <p style="font-size:14px; color:#333; margin:0; line-height:1.5;">{news_snippet}</p>
                                         </td>
-                                        <td style="width:30%; vertical-align:top; border:none; padding:0;">
+                                        <td style="width:32%; vertical-align:top; border:none; padding:0;">
                                             {img_tag_html}
                                         </td>
                                     </tr>
@@ -287,3 +259,49 @@ else:
                     )
             else:
                 st.info("ప్రస్తుతానికి ఎటువంటి వార్తలు లేవు. వార్తలను జోడించడానికి అడ్మిన్ లాగిన్ ఉపయోగించండి.")
+
+        # COLUMN 3: Right-Side Trending Headlines Column (Medium Text, Small Sub, Thumbnail Photo)
+        with col_right_trending:
+            st.markdown("<h3 style='margin-top:0; color:#c00000; border-bottom:2px solid #c00000; padding-bottom:5px;'>🔥 ముఖ్యాంశాలు (Trending Headlines)</h3>", unsafe_allow_html=True)
+            st.write("") 
+            
+            if all_articles:
+                # Loop through and present the top 6 trending articles sequentially
+                for s_idx, (side_headline, side_file) in enumerate(list(all_articles.items())[:6]):
+                    with open(os.path.join(SAVE_FOLDER, side_file), "r", encoding="utf-8") as f:
+                        s_art = json.load(f)
+                        
+                    s_head = s_art.get("headline", "")
+                    s_sub = s_art.get("sub_header", "")
+                    s_img = s_art.get("associated_image", "")
+                    
+                    img_html = f'<img src="{s_img}" style="width:100%; border-radius:4px; aspect-ratio:4/3; object-fit:cover;"/>' if s_img else ''
+                    sub_html = f'<p style="font-size:11px; color:#666; margin-top:3px; margin-bottom:0; line-height:1.2;">{s_sub[:40]}...</p>' if s_sub else ''
+                    
+                    # Clean click-anywhere horizontal trending list row item elements
+                    st.markdown(
+                        f"""
+                        <a href="?article={side_file}" target="_self" class="news-card-anchor">
+                            <div class="sidebar-clickable-card">
+                                <table style="width:100%; border-collapse:collapse; border:none;">
+                                    <tr>
+                                        <td style="width:70%; vertical-align:top; border:none; padding:0; padding-right:8px;">
+                                            <p style="font-size:15px; font-weight:700; line-height:1.3; color:#111; margin:0;">{s_head}</p>
+                                            {sub_html}
+                                        </td>
+                                        <td style="width:30%; vertical-align:middle; border:none; padding:0;">
+                                            {img_html}
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </a>
+                        """,
+                        unsafe_allow_html=True
+                    )
+            else:
+                st.caption("No trending headlines recorded in archives yet.")
+
+# 9. FOOTER STATUS BAR MONITOR
+st.markdown("---")
+st.caption("📰 **నేటి డెక్కన్ (Neti Deccan) Public News Portal Engine v5.4**")
