@@ -58,9 +58,21 @@ st.markdown(
     <style>
         .block-container { padding-top: 0.5rem !important; padding-bottom: 2rem !important; }
         
-        /* Forceful permanent removal of "Manage app" drawer buttons and dark cloud headers */
-        iframe[src*="host-service"], iframe[title="Manage app"], [data-testid="stDeploymentButton"], footer, [data-testid="stHeader"], [data-testid="stStatusWidget"], .stAppDeployButton {
-            display: none !important; visibility: hidden !important; height: 0px !important; width: 0px !important; opacity: 0 !important;
+        /* CORRECTED STYLES: Hides the default deploy widget frame while preserving sidebar toggle arrows */
+        iframe[src*="host-service"], iframe[title="Manage app"], footer, [data-testid="stStatusWidget"] {
+            display: none !important;
+            visibility: hidden !important;
+            height: 0px !important;
+            opacity: 0 !important;
+        }
+        [data-testid="stHeader"] {
+            background-color: transparent !important;
+            background: none !important;
+        }
+        /* Completely hides the "Deploy" button row while keeping sidebar elements active */
+        .stAppDeployButton, [data-testid="stDeploymentButton"] {
+            display: none !important;
+            visibility: hidden !important;
         }
         
         .news-card-anchor { text-decoration: none !important; color: inherit !important; display: block !important; margin-bottom: 15px; }
