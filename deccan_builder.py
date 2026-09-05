@@ -267,22 +267,26 @@ if is_admin_url:
             if pasted_stream_result:
                 try:
                     val = pasted_stream_result.value if hasattr(pasted_stream_result, 'value') else pasted_stream_result
-                    if isinstance(val, str) and val.startswith("data:image"): st.session_state['active_image_stream'] = val
+                    if isinstance(val, str) and val.startswith("data:image"): 
+                        st.session_state['active_image_stream'] = val
                 except Exception:
                     pass
         elif image_option == "📤 Upload Local File from Device":
             file_device_upload = st.file_uploader("Select image file:", type=["jpg", "jpeg", "png"])
-            if file_device_upload: st.session_state['active_image_stream'] = convert_file_to_cache_data(file_device_upload)
+            if file_device_upload: 
+                st.session_state['active_image_stream'] = convert_file_to_cache_data(file_device_upload)
         else:
             initial_url = default_image_log if default_image_log and default_image_log.startswith("http") else "https://unsplash.com"
             image_url = st.text_input("Paste Image URL:", value=initial_url, key="img_url_form")
-            if image_url: st.session_state['active_image_stream'] = image_url
+            if image_url: 
+                st.session_state['active_image_stream'] = image_url
 
         st.write("### 💾 Database Control Actions")
         col_save, col_delete = st.columns([0.5, 0.5])
         with col_save:
             if st.button(button_label, type="primary", use_container_width=True, key="save_art_btn"):
-                if not headline_input.strip(): st.error("❌ Heading cannot be blank!")
+                if not headline_input.strip(): 
+                    st.error("❌ Heading cannot be blank!")
                 else:
                     timestamp_str = active_file.replace("article_", "").replace(".json", "") if is_edit_mode else datetime.now().strftime("%Y%m%d_%H%M%S")
                     file_path = f"{SAVE_FOLDER}/article_{timestamp_str}.json"
@@ -292,7 +296,8 @@ if is_admin_url:
                         "associated_image": st.session_state['active_image_stream'] if st.session_state['active_image_stream'] else "", 
                         "exported_at": timestamp_str, "views": default_views, "author": default_author, "status": status_input
                     }
-                    with open(file_path, "w", encoding="utf-8") as f: json.dump(article_data, f, ensure_ascii=False, indent=4)
+                    with open(file_path, "w", encoding="utf-8") as f: 
+                        json.dump(article_data, f, ensure_ascii=False, indent=4)
                     st.success("🎉 Article Published directly to live public portal channels successfully!")
                     st.session_state['active_image_stream'] = None
                     st.rerun()
@@ -303,13 +308,15 @@ if is_admin_url:
                 if can_delete:
                     if st.button("🗑️ Delete This Article Permanently (తొలగించండి)", type="secondary", use_container_width=True, key="del_art_btn"):
                         file_to_remove = os.path.join(SAVE_FOLDER, active_file)
-                        if os.path.exists(file_to_remove): os.remove(file_to_remove)
+                        if os.path.exists(file_to_remove): 
+                            os.remove(file_to_remove)
                         st.session_state['active_image_stream'] = None
                         st.success("💥 Article Deleted!")
                         st.rerun()
                 else:
                     st.button("🔒 Deletion Restrained (Only Publisher/Admin Can Delete)", disabled=True, use_container_width=True, key="disabled_restriction_btn")
-            else: st.button("🗑️ Delete Option Unavailable", disabled=True, use_container_width=True, key="disabled_del_btn")
+            else: 
+                st.button("🗑️ Delete Option Unavailable", disabled=True, use_container_width=True, key="disabled_del_btn")
 
         st.markdown("---")
         st.write("### 👀 Live Layout Preview:")
