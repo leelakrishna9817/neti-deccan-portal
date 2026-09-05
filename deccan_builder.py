@@ -14,7 +14,7 @@ if not os.path.exists(SAVE_FOLDER):
 # 🔒 ADMIN CREDENTIALS CONFIGURATION
 # ====================================================================
 ADMIN_USERNAME = "admin"
-ADMIN_PASSWORD = "admin123"
+ADMIN_PASSWORD = "admin@123"
 
 if "authenticated" not in st.session_state:
     st.session_state["authenticated"] = False
