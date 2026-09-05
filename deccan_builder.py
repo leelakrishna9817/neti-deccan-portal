@@ -373,7 +373,31 @@ else:
 
         col_ctrl_btn, col_ctrl_search = st.columns([0.35, 0.65], gap="large")
         with col_ctrl_btn:
-            st.markdown(f'<a href="http://netideccan.com" class="single-epaper-button-card" target="_blank"><table style="width:100%; border-collapse:collapse; border:none; background:none; padding:0; margin:0;"><tr style="border:none; background:none;"><td style="width:75px; border:none; padding:0; padding-right:12px; vertical-align:middle; background:none;"><img src="{b64_epaper_logo}" style="width:100%; height:auto; display:block; border-radius:3px;"/></td><td style="border:none; padding:0; vertical-align:middle; text-align:left; background:none;"><span style="font-size:18px; font-weight:700; color:#0d47a1; font-family:Arial,sans-serif; line-height:1.2; display:block;">Read Print<br>E-Paper</span></td></tr></table></a>', unsafe_allow_html=True)
+            # FIXED: Replaces the table layout with a clean flexbox single-card button link block
+            st.markdown(
+                f"""
+                <a href="http://netideccan.com" target="_blank" style="text-decoration:none !important; outline:none !important; border:none !important; display:block; max-width:310px; margin-bottom:20px;">
+                    <div style="background-color:#ffffff; border:2px solid #0d47a1; border-radius:6px; padding:10px 14px; display:flex; align-items:center; justify-content:flex-start; cursor:pointer; width:100%; box-sizing:border-box;">
+                        <div style="width:75px; min-width:75px; margin-right:15px; border-right:1px solid #e2e8f0; padding-right:10px; display:flex; align-items:center; box-sizing:border-box;">
+                            <img src="{b64_epaper_logo}" style="width:100%; height:auto; display:block; border-radius:3px; border:none; outline:none; pointer-events:none;"/>
+                        </div>
+                        <div style="display:flex; align-items:center; vertical-align:middle; text-align:left;">
+                            <span style="font-size:18px; font-weight:700; color:#0d47a1; font-family:Arial,sans-serif; line-height:1.2; text-decoration:none !important;">Read Print<br>E-Paper</span>
+                        </div>
+                    </div>
+                </a>
+                <style>
+                    /* Force layout container to ignore old border artifacts injected by default link styles */
+                    div[data-testid="stMarkdown"] a {{
+                        border: none !important;
+                        outline: none !important;
+                        text-decoration: none !important;
+                        background: transparent !important;
+                    }}
+                </style>
+                """,
+                unsafe_allow_html=True
+            )
         with col_ctrl_search:
             search_query = st.text_input("🔍 వెతకండి (Search news by headline keyword):", placeholder="Type keywords here to filter articles...", key="news_search_reader_field").strip()
             
