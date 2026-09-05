@@ -287,7 +287,7 @@ else:
         st.markdown(f"<h1 style='font-size:36px; font-weight:800; color:#000; margin-top:15px;'>{full_art.get('headline')}</h1>", unsafe_allow_html=True)
         if full_art.get('sub_header'):
             st.markdown(f"<h3 style='color:#55; font-style:italic; font-size:18px; margin-top:4px;'>{full_art.get('sub_header')}</h3>", unsafe_allow_html=True)
-        st.caption(f"📅 తేదీ: {full_art.get('date')}")
+        st.caption(f"📅 తేదీ: {full_art.get('date')} | 🏷️ వర్గం: {full_art.get('category', 'All News')}")
         st.markdown("<hr style='border-top:2px solid #222;'>", unsafe_allow_html=True)
         
         c_l, c_r = st.columns([0.65, 0.35], gap="large")
@@ -299,20 +299,30 @@ else:
                 st.image(f_img, use_container_width=True)
 
     # ----------------------------------------------------------------
-    # MAIN PORTAL HOMEPAGE: BRANDED TOP MASTHEAD + LIVE MARQUEE SCROLL
+    # MAIN PORTAL HOMEPAGE: MULTI-COLUMN DESIGN WITH LEFT CATEGORY SIDEBAR
     # ----------------------------------------------------------------
     else:
-        # Render the standard shared branding masthead on top
         render_unified_branding_masthead()
         
-        # Upper control layout row: Render updated enlarged clickable e-paper block and search bar side-by-side
+        # Load your official brand image asset straight inside your memory cache
+        b64_logo_str = ""
+        if os.path.exists("official_logo.png"):
+            import base64
+            with open("official_logo.png", "rb") as logo_file:
+                b64_logo_str = f"data:image/png;base64,{base64.b64encode(logo_file.read()).decode('utf-8')}"
+        else:
+            b64_logo_str = "https://unsplash.com"
+
+        # UPPER CONTROL ROW: Contains your enlarged button box on left and search bar on right
         col_ctrl_btn, col_ctrl_search = st.columns([0.35, 0.65], gap="large")
         with col_ctrl_btn:
             st.markdown(
-                """
+                f"""
                 <a href="http://netideccan.com" class="custom-epaper-btn" target="_blank">
-                    <span class="custom-epaper-btn-icon">📰</span>
-                    <span class="custom-epaper-btn-text">Read Print E-Paper</span>
+                    <div class="custom-epaper-btn-img-frame">
+                        <img src="{b64_logo_str}"/>
+                    </div>
+                    <span class="custom-epaper-btn-text">Read Print<br>E-Paper</span>
                 </a>
                 """,
                 unsafe_allow_html=True
@@ -322,15 +332,24 @@ else:
             
         st.markdown("<br>", unsafe_allow_html=True)
 
-        # Split lower screen area (70% Center Main News feed, 30% Right Sidebar Feed)
-        col_center_news, col_right_trending = st.columns([0.68, 0.32], gap="large")
+        # FIXED COLUMN SPLIT LAYOUT ENGINE RE-ADDED HERE
+        col_left_categories, col_center_news, col_right_trending = st.columns([0.20, 0.53, 0.27], gap="medium")
         
-        # COLUMN A: Center Breaking News
+        # COLUMN A: Left Category Selector Sidebar Panel Box
+        with col_left_categories:
+            st.markdown("<h4 style='margin-top:0; font-weight:700; color:#333; border-bottom:2px solid #ccc; padding-bottom:5px;'>🏷️ వార్తా వర్గాలు</h4>", unsafe_allow_html=True)
+            
+            selected_category = st.radio(
+                label="Select Category Filters:",
+                options=["All News", "Politics", "Sports", "District News", "Cinema"],
+                label_visibility="collapsed"
+            )
+
+        # COLUMN B: Center News Feed (Filtered by active Category selection!)
         with col_center_news:
-            st.markdown("<h3 style='margin-top:0; font-weight:800; border-bottom:2px solid #333; padding-bottom:5px;'>📰 తాజా వార్తలు (Latest News Updates)</h3>", unsafe_allow_html=True)
+            st.markdown(f"<h3 style='margin-top:0; font-weight:800; border-bottom:2px solid #333; padding-bottom:5px;'>📰 {selected_category} Updates</h3>", unsafe_allow_html=True)
             st.write("") 
             
-            # Compile matches factoring both text key query words and selected category tags
             visible_articles_count = 0
             if all_articles:
                 for headline, file in all_articles.items():
