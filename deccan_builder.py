@@ -49,15 +49,15 @@ for file in saved_files:
         continue
 
 # ====================================================================
-# 🎨 GLOBAL BRAND STYLING & PREMIUM OVERLAYS
+# 🎨 GLOBAL BRAND STYLING & CORRECTIONS EFFECTED HERE
 # ====================================================================
 st.markdown(
     """
     <style>
         .block-container { padding-top: 0.5rem !important; padding-bottom: 2rem !important; }
         
-        /* Forceful removal of default hosting widgets and technical diagnostic tools */
-        iframe[src*="host-service"], iframe[title="Manage app"], [data-testid="stDeploymentButton"], footer, [data-testid="stHeader"] {
+        /* Wipes the developer options, standard header fields, and bottom buttons entirely */
+        iframe[src*="host-service"], iframe[title="Manage app"], [data-testid="stDeploymentButton"], footer, [data-testid="stHeader"], [data-testid="stStatusWidget"], .stAppDeployButton {
             display: none !important; visibility: hidden !important; height: 0px !important; opacity: 0 !important;
         }
         
@@ -73,8 +73,9 @@ st.markdown(
         }
         .sidebar-clickable-card:hover { background-color: #fafafa; border-color: #cbd5e1; }
         
+        /* CORRECTION 1: Reduced text character spacing tracking distance */
         .logo-english-sub {
-            font-size: 28px !important; font-weight: 800 !important; color: #111111 !important; letter-spacing: 6px !important; margin: 6px 0 2px 0 !important; font-family: 'Arial Black', Gadget, sans-serif;
+            font-size: 28px !important; font-weight: 800 !important; color: #111111 !important; letter-spacing: 1.5px !important; margin: 4px 0 2px 0 !important; font-family: 'Arial Black', Gadget, sans-serif;
         }
         
         .breaking-marquee-box {
@@ -82,15 +83,17 @@ st.markdown(
         }
         .marquee-text-style { font-size: 18px; font-weight: 700; color: #c62828; font-family: sans-serif; }
         
+        /* CORRECTION 2: Streamlined single e-paper layout block button containing logo on left and text on right */
         .custom-epaper-btn {
-            background-color: #ffffff; border: 2px solid #0d47a1; border-radius: 6px; padding: 8px 14px; display: flex; align-items: center; justify-content: flex-start; cursor: pointer; text-decoration: none !important; transition: background-color 0.2s, transform 0.1s; margin-bottom: 20px; max-width: 320px;
+            background-color: #ffffff; border: 2px solid #0d47a1; border-radius: 6px; padding: 6px 12px; display: flex; align-items: center; justify-content: flex-start; cursor: pointer; text-decoration: none !important; transition: background-color 0.2s, transform 0.1s; margin-bottom: 20px; max-width: 320px;
         }
         .custom-epaper-btn:hover { background-color: #f8fafc; transform: translateY(-1px); }
         .custom-epaper-btn-img-frame { width: 85px; height: auto; margin-right: 15px; border-right: 1px solid #e2e8f0; padding-right: 10px; display: flex; align-items: center; }
         .custom-epaper-btn-text { font-size: 19px; font-weight: 700; color: #0d47a1; font-family: Arial, sans-serif; line-height: 1.2; }
         
+        /* CORRECTION 3: Decreased distance margin heights between news type list items */
         .custom-category-btn-box {
-            border: 1px solid #e2e8f0; border-radius: 5px; padding: 10px 14px; margin-bottom: 8px; font-size: 16px; font-weight: 700; color: #334155; transition: all 0.2s; background-color: #f8fafc; text-align: left;
+            border: 1px solid #e2e8f0; border-radius: 5px; padding: 6px 12px; margin-bottom: 5px; font-size: 15px; font-weight: 700; color: #334155; transition: all 0.2s; background-color: #f8fafc; text-align: left;
         }
         .custom-category-btn-box:hover { background-color: #f1f5f9; border-color: #cbd5e1; color: #0d47a1; }
         .category-active { background-color: #e0f2fe !important; border-color: #0284c7 !important; color: #0369a1 !important; }
@@ -107,18 +110,15 @@ def render_unified_branding_masthead():
     st.markdown("<div class='logo-english-sub'>NETIDECCAN</div>", unsafe_allow_html=True)
     st.markdown("<div class='breaking-marquee-box'><marquee behavior='scroll' direction='left' scrollamount='6'><span class='marquee-text-style'>🔥 నేటి డెక్కన్ వార్తలకు స్వాగతం తాజా రాజకీయ, ఆర్థిక, క్రీడా వార్తలు మీ కోసం ప్రతి క్షణం నిజమైన సమాచారం నేటి డెక్కన్ – మీ నమ్మకమైన వార్తా వేదిక.</span></marquee></div>", unsafe_allow_html=True)
 
-# Always render your beautiful branding logo and breaking news marquee banner at the very top
+# Render brand assets at top
 render_unified_branding_masthead()
 
 # ====================================================================
-# 🎛️ SIDEBAR ROUTER LATCH: TOGGLES PUBLIC FEED VS ADMIN PANEL
+# 🎛️ SIDEBAR ROUTER LATCH
 # ====================================================================
 st.sidebar.markdown("### ⚙️ System Terminal")
 admin_latch = st.sidebar.checkbox("🔒 Open Admin Workspace Panel")
 
-# --------------------------------------------------------------------
-# CONFIGURATION A: LOGGED IN ADMIN WORKSPACE PAGE
-# --------------------------------------------------------------------
 if admin_latch:
     st.markdown("<div style='background-color:#f1f5f9; padding:10px; border-radius:4px; text-align:center;'><h4>✍️ నేటి డెక్కన్ - EDIT CONTROL PANEL</h4></div><br>", unsafe_allow_html=True)
     
@@ -277,11 +277,20 @@ else:
         
         with col_left_categories:
             st.markdown("<h4 style='margin-top:0; font-weight:700; color:#333; border-bottom:2px solid #ccc; padding-bottom:5px;'>📰 వార్తా వర్గాలు</h4>", unsafe_allow_html=True)
-            available_categories = ["Casual News", "Politics", "Sports", "Cinema", "International", "National", "Business"]
-            for cat_name in available_categories:
+            
+            available_categories = {
+                "Casual News": "📰",
+                "Politics": "⚖️",
+                "Sports": "🏆",
+                "Cinema": "🎬",
+                "International": "🌍",
+                "National": "🇮🇳",
+                "Business": "💼"
+            }
+            for cat_name, cat_icon in available_categories.items():
                 is_active = (selected_category == cat_name)
                 active_class = "category-active" if is_active else ""
-                st.markdown(f'<a href="?category={cat_name}" target="_self" style="text-decoration:none;"><div class="custom-category-btn-box {active_class}">📂 {cat_name}</div></a>', unsafe_allow_html=True)
+                st.markdown(f'<a href="?category={cat_name}" target="_self" style="text-decoration:none;"><div class="custom-category-btn-box {active_class}">{cat_icon} {cat_name}</div></a>', unsafe_allow_html=True)
 
         with col_center_news:
             st.markdown(f"<h3 style='margin-top:0; font-weight:800; border-bottom:2px solid #333; padding-bottom:5px;'>📰 {selected_category} Updates</h3>", unsafe_allow_html=True)
