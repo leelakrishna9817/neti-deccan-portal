@@ -21,9 +21,11 @@ if "authenticated" not in st.session_state:
 if 'active_image_stream' not in st.session_state:
     st.session_state['active_image_stream'] = None
 
+# Core Router: Read query parameters to determine face routing paths
 url_parameters = st.query_params
 current_viewing_file = url_parameters.get("article", None)
 selected_category = url_parameters.get("category", "Casual News")
+is_admin_url = url_parameters.get("mode") == "admin"
 
 def convert_file_to_cache_data(uploaded_file):
     try:
@@ -49,15 +51,14 @@ for file in saved_files:
         continue
 
 # ====================================================================
-# 🎨 GLOBAL BRAND STYLING & CRITICAL GRID FIXES
+# 🎨 GLOBAL BRAND STYLING & LOOK-AND-FEEL MANAGEMENT
 # ====================================================================
 st.markdown(
     """
     <style>
-        /* Decreases white padding space between browser top window frame and your logo */
         .block-container { padding-top: 0.5rem !important; padding-bottom: 2rem !important; }
         
-        /* Forceful permanent removal of "Manage app" drawer button and dark cloud headers */
+        /* Forceful permanent removal of "Manage app" drawer buttons and dark cloud headers */
         iframe[src*="host-service"], iframe[title="Manage app"], [data-testid="stDeploymentButton"], footer, [data-testid="stHeader"], [data-testid="stStatusWidget"], .stAppDeployButton {
             display: none !important; visibility: hidden !important; height: 0px !important; width: 0px !important; opacity: 0 !important;
         }
@@ -74,9 +75,9 @@ st.markdown(
         }
         .sidebar-clickable-card:hover { background-color: #fafafa; border-color: #cbd5e1; }
         
-        /* FIX 1: Tightened character tracking distance for NETIDECCAN header text */
+        /* Tight tracking distance for NETIDECCAN header text */
         .logo-english-sub {
-            font-size: 28px !important; font-weight: 800 !important; color: #111111 !important; letter-spacing: -0.5px !important; margin: 2px 0 2px 0 !important; font-family: 'Arial Black', Gadget, sans-serif;
+            font-size: 28px !important; font-weight: 800 !important; color: #111111 !important; letter-spacing: -0.5px !important; margin: 4px 0 2px 0 !important; font-family: 'Arial Black', Gadget, sans-serif;
         }
         
         .breaking-marquee-box {
@@ -84,13 +85,13 @@ st.markdown(
         }
         .marquee-text-style { font-size: 18px; font-weight: 700; color: #c62828; font-family: sans-serif; }
         
-        /* FIX 2: Bulletproof layout rule forcing your e-paper button to stay as ONE single row container block */
+        /* Streamlined single e-paper layout block button containing logo on left and text on right */
         .single-epaper-button-card {
             display: inline-block !important;
             background-color: #ffffff !important;
             border: 2px solid #0d47a1 !important;
             border-radius: 6px !important;
-            padding: 8px 14px !important;
+            padding: 6px 12px !important;
             cursor: pointer !important;
             text-decoration: none !important;
             transition: background-color 0.2s, transform 0.1s;
@@ -100,9 +101,9 @@ st.markdown(
         }
         .single-epaper-button-card:hover { background-color: #f8fafc !important; transform: translateY(-1px); }
         
-        /* FIX 3: Decreased distance vertical margin gap padding heights between news type selection cards */
+        /* Decreased distance vertical margin gap padding heights between news type selection cards */
         .custom-category-btn-box {
-            border: 1px solid #e2e8f0; border-radius: 5px; padding: 6px 12px; margin-bottom: 4px !important; font-size: 15px; font-weight: 700; color: #334155; transition: all 0.2s; background-color: #f8fafc; text-align: left;
+            border: 1px solid #e2e8f0; border-radius: 5px; padding: 6px 12px; margin-bottom: 5px !important; font-size: 15px; font-weight: 700; color: #334155; transition: all 0.2s; background-color: #f8fafc; text-align: left;
         }
         .custom-category-btn-box:hover { background-color: #f1f5f9; border-color: #cbd5e1; color: #0d47a1; }
         .category-active { background-color: #e0f2fe !important; border-color: #0284c7 !important; color: #0369a1 !important; }
@@ -119,16 +120,13 @@ def render_unified_branding_masthead():
     st.markdown("<div class='logo-english-sub'>NETIDECCAN</div>", unsafe_allow_html=True)
     st.markdown("<div class='breaking-marquee-box'><marquee behavior='scroll' direction='left' scrollamount='6'><span class='marquee-text-style'>🔥 నేటి డెక్కన్ వార్తలకు స్వాగతం తాజా రాజకీయ, ఆర్థిక, క్రీడా వార్తలు మీ కోసం ప్రతి క్షణం నిజమైన సమాచారం నేటి డెక్కన్ – మీ నమ్మకమైన వార్తా వేదిక.</span></marquee></div>", unsafe_allow_html=True)
 
-# Compile logo brand graphics horizontally at top
+# Render identical brand headers across both public/admin interfaces
 render_unified_branding_masthead()
 
 # ====================================================================
-# 🎛️ SIDEBAR WORKSPACE CONTROL SWITCH (Opens the Editor Form Panel)
+# FACE 1: PRIVATE EDITING WORKSPACE GATEWAY (Activated via ?mode=admin)
 # ====================================================================
-st.sidebar.markdown("### ⚙️ System Terminal")
-admin_latch = st.sidebar.checkbox("🔒 Open Admin Workspace Panel")
-
-if admin_latch:
+if is_admin_url:
     st.markdown("<div style='background-color:#f1f5f9; padding:10px; border-radius:4px; text-align:center;'><h4>✍️ నేటి డెక్కన్ - EDIT CONTROL PANEL</h4></div><br>", unsafe_allow_html=True)
     
     if not st.session_state["authenticated"]:
@@ -301,7 +299,7 @@ else:
         col_left_categories, col_center_news, col_right_trending = st.columns([0.22, 0.51, 0.27], gap="medium")
         
         with col_left_categories:
-            st.markdown("<h4 style='margin-top:0; font-weight:700; color:#333; border-bottom:2px solid #ccc; padding-bottom:5px;'>📰 వార్తా వర్గాలు</h4>", unsafe_allow_html=True)
+            st.markdown("<h4 style='margin-top:0; font-weight:700; color:#333; border-bottom:2px solid #ccc; padding-bottom:5px;'>📰  వార్తా వర్గాలు</h4>", unsafe_allow_html=True)
             
             available_categories = {
                 "Casual News": "📰",
@@ -338,6 +336,7 @@ else:
                     arc_image = art.get("associated_image", "")
                     
                     news_snippet = arc_content[:160] + "..." if len(arc_content) > 160 else arc_content
+
                 img_tag_html = f'<img src="{arc_image}" style="width:100%; max-height:150px; object-fit:cover; border-radius:4px;"/>' if arc_image else ''
                 sub_tag_html = f'<p style="color:#555; font-style:italic; font-size:14px; margin-top:2px; margin-bottom:4px;">{arc_sub_header}</p>' if arc_sub_header else ''
                 
