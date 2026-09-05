@@ -13,7 +13,7 @@ components.html(
     <script>
         var meta = document.createElement('meta');
         meta.name = "google-site-verification";
-        meta.content = "PASTE_YOUR_ACTUAL_GOOGLE_CODE_HERE"; 
+        meta.content = "<meta name="google-site-verification" content="WjmKSPpJvD1TC5t15K5CnsgcIvwQurTlKILOKSVgxSI" />"; 
         document.getElementsByTagName('head')[0].appendChild(meta);
     </script>
     """,
