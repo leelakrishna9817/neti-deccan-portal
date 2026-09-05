@@ -141,17 +141,29 @@ if is_admin_url:
                 
     else:
         st.sidebar.success("🟢 Authenticated Admin")
-        if st.sidebar.button("🚪 Log Out"):
+        if st.sidebar.button("🚪 Log Out of System"):
             st.session_state["authenticated"] = False
             st.session_state['active_image_stream'] = None
             st.rerun()
             
+        # ------------------------------------------------------------
+        # 📁 LEFT COLLAPSIBLE PAST ARTICLES MANAGER SIDEBAR PANEL
+        # ------------------------------------------------------------
         st.sidebar.markdown("---")
-        st.sidebar.subheader("📁 Edit/View Past Articles")
+        st.sidebar.subheader("📁 పాత కథనాలు (Manage Past Articles)")
         
-        editor_map = {"--- ➕ Create New Article ---": None}
-        editor_map.update(all_articles)
-        selected_headline = st.sidebar.radio("Select Article to Edit:", list(editor_map.keys()))
+        # Search filter field inside left panel to track down titles quickly
+        admin_search_query = st.sidebar.text_input("🔍 వెతకండి (Search historical articles):", placeholder="Type title keyword...", key="adm_search_past_field").strip()
+        
+        # Build out select index mapping records dynamically
+        editor_map = {"--- ➕ Create New Article (కొత్త వార్తను రాయండి) ---": None}
+        
+        for headline, file in all_articles.items():
+            if admin_search_query and admin_search_query.lower() not in headline.lower():
+                continue
+            editor_map[headline] = file
+            
+        selected_headline = st.sidebar.radio("సవరించడానికి వార్తను ఎంచుకోండి (Select to Edit):", list(editor_map.keys()))
         active_file = editor_map[selected_headline]
         is_edit_mode = active_file is not None
 
@@ -166,7 +178,8 @@ if is_admin_url:
             default_image_log = loaded_data.get("associated_image", "")
             page_header = f"📝 Editing Past Article: {selected_headline}"
             button_label = "💾 Update and Save Changes to This Article"
-            if default_image_log: st.session_state['active_image_stream'] = default_image_log
+            if default_image_log and not st.session_state['active_image_stream']: 
+                st.session_state['active_image_stream'] = default_image_log
         else:
             default_headline = ""
             default_sub_header = ""
@@ -177,7 +190,7 @@ if is_admin_url:
             page_header = "➕ Create and Format a New Article"
             button_label = "🚀 Publish and Save New Article to Archives"
 
-        # MOVE: All input form modules are safely locked here inside the verified auth block!
+        # Render the input fields inside main area layout
         st.markdown(f"### {page_header}")
         headline_input = st.text_input(label="Main Headline:", value=default_headline, key="main_head_form")
         sub_header_input = st.text_input(label="Sub-Header Option (Optional):", value=default_sub_header, key="sub_head_form")
@@ -210,26 +223,38 @@ if is_admin_url:
             image_url = st.text_input("Paste Image URL:", value=initial_url, key="img_url_form")
             if image_url: st.session_state['active_image_stream'] = image_url
 
+        # ------------------------------------------------------------
+        # 💾 SIDE-BY-SIDE CONTROL ACTION BUTTONS (Publish vs Delete Permanent)
+        # ------------------------------------------------------------
         st.write("### 💾 Database Control Actions")
-        col_save, col_delete = st.columns([0.7, 0.3])
+        col_save, col_delete = st.columns([0.5, 0.5])
+        
         with col_save:
-            if st.button(button_label, use_container_width=True, key="save_art_btn"):
-                if not headline_input.strip(): st.error("❌ Heading cannot be blank!")
+            if st.button(button_label, type="primary", use_container_width=True, key="save_art_btn"):
+                if not headline_input.strip(): 
+                    st.error("❌ Heading cannot be blank!")
                 else:
                     timestamp_str = active_file.replace("article_", "").replace(".json", "") if is_edit_mode else datetime.now().strftime("%Y%m%d_%H%M%S")
                     file_path = f"{SAVE_FOLDER}/article_{timestamp_str}.json"
                     article_data = {"headline": headline_input, "sub_header": sub_header_input, "category": category_input, "content": body_input, "date": date_input, "associated_image": st.session_state['active_image_stream'] if st.session_state['active_image_stream'] else "", "exported_at": timestamp_str}
-                    with open(file_path, "w", encoding="utf-8") as f: json.dump(article_data, f, ensure_ascii=False, indent=4)
+                    with open(file_path, "w", encoding="utf-8") as f: 
+                        json.dump(article_data, f, ensure_ascii=False, indent=4)
                     st.success("🎉 Article Saved and Synced Successfully!")
                     st.session_state['active_image_stream'] = None
                     st.rerun()
+                    
         with col_delete:
             if is_edit_mode:
-                if st.button("🗑️ Delete This Article Permanently", type="secondary", use_container_width=True, key="del_art_btn"):
+                # Upgraded action button allows deleting data rows permanently from the storage base folder stream
+                if st.button("🗑️ Delete This Article Permanently (తొలగించండి)", type="secondary", use_container_width=True, key="del_art_btn"):
                     file_to_remove = os.path.join(SAVE_FOLDER, active_file)
-                    if os.path.exists(file_to_remove): os.remove(file_to_remove)
-                    st.success("💥 Article Deleted!")
+                    if os.path.exists(file_to_remove): 
+                        os.remove(file_to_remove)
+                    st.session_state['active_image_stream'] = None
+                    st.success("💥 Article Deleted Permanent from Local Core Files!")
                     st.rerun()
+            else:
+                st.button("🗑️ Delete Option Unavailable", disabled=True, use_container_width=True, key="disabled_del_btn")
 
         st.markdown("---")
         st.write("### 👀 Live Layout Preview:")
@@ -301,7 +326,7 @@ else:
         col_left_categories, col_center_news, col_right_trending = st.columns([0.22, 0.51, 0.27], gap="medium")
         
         with col_left_categories:
-            st.markdown("<h4 style='margin-top:0; font-weight:700; color:#333; border-bottom:2px solid #ccc; padding-bottom:5px;'>📰  వార్తా వర్గాలు</h4>", unsafe_allow_html=True)
+            st.markdown("<h4 style='margin-top:0; font-weight:700; color:#333; border-bottom:2px solid #ccc; padding-bottom:5px;'>📰 వార్తా వర్గాలు</h4>", unsafe_allow_html=True)
             
             available_categories = {
                 "Casual News": "📰",
@@ -338,28 +363,27 @@ else:
                     arc_image = art.get("associated_image", "")
                     
                     news_snippet = arc_content[:160] + "..." if len(arc_content) > 160 else arc_content
+                    img_tag_html = f'<img src="{arc_image}" style="width:100%; max-height:150px; object-fit:cover; border-radius:4px;"/>' if arc_image else ''
+                    sub_tag_html = f'<p style="color:#555; font-style:italic; font-size:14px; margin-top:2px; margin-bottom:4px;">{arc_sub_header}</p>' if arc_sub_header else ''
+                    
+                    st.markdown(f'<a href="?category={selected_category}&article={file}" target="_self" class="news-card-anchor"><div class="news-clickable-box"><table style="width:100%; border-collapse:collapse; border:none;"><tr><td style="width:68%; vertical-align:top; border:none; padding:0; padding-right:15px;"><h4 style="color:#000; font-weight:700; margin:0; font-size:22px; line-height:1.3;">{arc_headline}</h4>{sub_tag_html}<p style="color:#999; font-size:11px; margin:4px 0;">📅 తేదీ: {arc_date}</p><p style="font-size:15px; color:#333; margin:0; line-height:1.5;">{news_snippet}</p></td><td style="width:32%; vertical-align:top; border:none; padding:0;">{img_tag_html}</td></tr></table></div></a>', unsafe_allow_html=True)
+            
+            if visible_articles_count == 0:
+                st.info(f"ప్రస్తుతానికి '{selected_category}' విభాగంలో ఎటువంటి వార్తలు లేవు.")
 
-                img_tag_html = f'<img src="{arc_image}" style="width:100%; max-height:150px; object-fit:cover; border-radius:4px;"/>' if arc_image else ''
-                sub_tag_html = f'<p style="color:#555; font-style:italic; font-size:14px; margin-top:2px; margin-bottom:4px;">{arc_sub_header}</p>' if arc_sub_header else ''
-                
-                st.markdown(f'<a href="?category={selected_category}&article={file}" target="_self" class="news-card-anchor"><div class="news-clickable-box"><table style="width:100%; border-collapse:collapse; border:none;"><tr><td style="width:68%; vertical-align:top; border:none; padding:0; padding-right:15px;"><h4 style="color:#000; font-weight:700; margin:0; font-size:22px; line-height:1.3;">{arc_headline}</h4>{sub_tag_html}<p style="color:#999; font-size:11px; margin:4px 0;">📅 తేదీ: {arc_date}</p><p style="font-size:15px; color:#333; margin:0; line-height:1.5;">{news_snippet}</p></td><td style="width:32%; vertical-align:top; border:none; padding:0;">{img_tag_html}</td></tr></table></div></a>', unsafe_allow_html=True)
-        
-        if visible_articles_count == 0:
-            st.info(f"ప్రస్తుతానికి '{selected_category}' విభాగంలో ఎటువంటి వార్తలు లేవు.")
-
-    with col_right_trending:
-        st.markdown("<h3 style='margin-top:0; color:#c00000; border-bottom:2px solid #c00000; padding-bottom:5px;'>🔥 ముఖ్యాంశాలు</h3>", unsafe_allow_html=True)
-        st.write("") 
-        if all_articles:
-            for side_headline, side_file in list(all_articles.items())[:6]:
-                with open(os.path.join(SAVE_FOLDER, side_file), "r", encoding="utf-8") as f: s_art = json.load(f)
-                s_head = s_art.get("headline", "")
-                s_sub = s_art.get("sub_header", "")
-                s_img = s_art.get("associated_image", "")
-                
-                img_html = f'<img src="{s_img}" style="width:100%; border-radius:4px; aspect-ratio:4/3; object-fit:cover;"/>' if s_img else ''
-                s_sub_val = s_sub if s_sub else ""
-                sub_html = f'<p style="font-size:11px; color:#666; margin-top:3px; margin-bottom:0; line-height:1.2;">{s_sub_val[:40]}...</p>' if s_sub_val else ''
-                st.markdown(f'<a href="?category={selected_category}&article={side_file}" target="_self" class="news-card-anchor"><div class="sidebar-clickable-card"><table style="width:100%; border-collapse:collapse; border:none;"><tr><td style="width:70%; vertical-align:top; border:none; padding:0; padding-right:8px;"><p style="font-size:15px; font-weight:700; line-height:1.3; color:#111; margin:0;">{s_head}</p>{sub_html}</td><td style="width:30%; vertical-align:middle; border:none; padding:0;">{img_html}</td></tr></table></div></a>', unsafe_allow_html=True)
-        else:
-            st.caption("No trending headlines recorded in archives yet.")
+        with col_right_trending:
+            st.markdown("<h3 style='margin-top:0; color:#c00000; border-bottom:2px solid #c00000; padding-bottom:5px;'>🔥 ముఖ్యాంశాలు</h3>", unsafe_allow_html=True)
+            st.write("") 
+            if all_articles:
+                for side_headline, side_file in list(all_articles.items())[:6]:
+                    with open(os.path.join(SAVE_FOLDER, side_file), "r", encoding="utf-8") as f: s_art = json.load(f)
+                    s_head = s_art.get("headline", "")
+                    s_sub = s_art.get("sub_header", "")
+                    s_img = s_art.get("associated_image", "")
+                    
+                    img_html = f'<img src="{s_img}" style="width:100%; border-radius:4px; aspect-ratio:4/3; object-fit:cover;"/>' if s_img else ''
+                    s_sub_val = s_sub if s_sub else ""
+                    sub_html = f'<p style="font-size:11px; color:#666; margin-top:3px; margin-bottom:0; line-height:1.2;">{s_sub_val[:40]}...</p>' if s_sub_val else ''
+                    st.markdown(f'<a href="?category={selected_category}&article={side_file}" target="_self" class="news-card-anchor"><div class="sidebar-clickable-card"><table style="width:100%; border-collapse:collapse; border:none;"><tr><td style="width:70%; vertical-align:top; border:none; padding:0; padding-right:8px;"><p style="font-size:15px; font-weight:700; line-height:1.3; color:#111; margin:0;">{s_head}</p>{sub_html}</td><td style="width:30%; vertical-align:middle; border:none; padding:0;">{img_html}</td></tr></table></div></a>', unsafe_allow_html=True)
+            else:
+                st.caption("No trending headlines recorded in archives yet.")
