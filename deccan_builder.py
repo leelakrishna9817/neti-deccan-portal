@@ -189,6 +189,7 @@ if is_admin_url:
         active_file = editor_map[selected_headline]
         is_edit_mode = active_file is not None
 
+        # FIX: Explicitly initialize the missing button_label variables to prevent NameError crashes
         if is_edit_mode:
             with open(os.path.join(SAVE_FOLDER, active_file), "r", encoding="utf-8") as f:
                 loaded_data = json.load(f)
@@ -196,7 +197,10 @@ if is_admin_url:
             default_sub_header = loaded_data.get("sub_header", "")
             default_body = loaded_data.get("content", "")
             default_date = loaded_data.get("date", "")
+            default_category = loaded_data.get("category", "All News")
             default_image_log = loaded_data.get("associated_image", "")
+            page_header = f"📝 Editing Article: {selected_headline}"
+            button_label = "💾 Update and Save Changes to This Article"  # <--- MUST BE HERE
             if default_image_log:
                 st.session_state['active_image_stream'] = default_image_log
         else:
@@ -204,7 +208,10 @@ if is_admin_url:
             default_sub_header = ""
             default_body = ""
             default_date = datetime.now().strftime("%B %d, %Y")
+            default_category = "All News"
             default_image_log = ""
+            page_header = "➕ Create and Format a New Article"
+            button_label = "🚀 Publish and Save New Article to Archives"  # <--- MUST BE HERE
 
         headline_input = st.text_input(label="Main Headline:", value=default_headline, key="main_head_form")
         sub_header_input = st.text_input(label="Sub-Header Option:", value=default_sub_header, key="sub_head_form")
