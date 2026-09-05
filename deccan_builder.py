@@ -218,20 +218,50 @@ if is_admin_url:
         body_input = st.text_area(label="News Content:", value=default_body, height=200, key="body_txt_form")
         date_input = st.text_input(label="Publish Date:", value=default_date, key="pub_date_form")
 
+        st.write("### 🖼️ Layout Photo Settings")
         image_option = st.radio("Choose Image Input Method:", ("📋 Paste Copied Photo (Ctrl+V)", "📤 Upload Local File from Device", "Use Web Image URL"))
+
+        # FIX: Explicitly initialize the variable as None first so it always exists and avoids NameErrors
+        pasted_stream_result = None
+
         if image_option == "📋 Paste Copied Photo (Ctrl+V)":
-            pasted_stream_result = st.components.v1.html('<div id="c-paste" style="border:2px dashed #999; padding:20px; text-align:center;">[ CLICK HERE & CTRL+V ]</div><script>document.addEventListener("paste",function(e){var items=e.clipboardData.items;for(var i=0;i<items.length;i++){if(items[i].type.indexOf("image")!==-1){var blob=items[i].getAsFile();var reader=new FileReader();reader.onload=function(ev){window.parent.postMessage({type:"streamlit:setComponentValue",value:ev.target.result},"*");};reader.readAsDataURL(blob);}}});</script>', height=95)
-        # FIX: Added a safe string check to prevent StreamlitAPIException crashes
-        if pasted_stream_result:
-            try:
-                # Safely extract the raw value if it's wrapped inside a component object
-                val = pasted_stream_result.value if hasattr(pasted_stream_result, 'value') else pasted_stream_result
-                if isinstance(val, str) and val.startswith("data:image"):
-                    st.session_state['active_image_stream'] = val
-            except Exception:
-                pass
+            st.write("👇 **Click once inside the box below**, then press **Ctrl + V** to paste your clipboard picture:")
+            paste_html_bridge = """
+            <div id="canvas-paste" style="border: 2px dashed #999; background: #fdfdfd; padding: 22px; text-align: center; color: #444; font-family: sans-serif; cursor: pointer; font-weight: bold; border-radius: 4px;">
+                [ CLICK HERE & PRESS CTRL+V TO PASTE IMAGE ]
+            </div>
+            <script>
+            document.addEventListener('paste', function (e) {
+                var items = e.clipboardData.items;
+                for (var i = 0; i < items.length; i++) {
+                    if (items[i].type.indexOf('image') !== -1) {
+                        var blob = items[i].getAsFile();
+                        var reader = new FileReader();
+                        reader.onload = function (event) {
+                            document.getElementById('canvas-paste').style.background = '#eafaea';
+                            document.getElementById('canvas-paste').style.borderColor = '#4caf50';
+                            document.getElementById('canvas-paste').innerText = '✅ Image Captured into App Memory!';
+                            window.parent.postMessage({type: 'streamlit:setComponentValue', value: event.target.result}, '*');
+                        };
+                        reader.readAsDataURL(blob);
+                    }
+                }
+            });
+            </script>
+            """
+            pasted_stream_result = st.components.v1.html(paste_html_bridge, height=95)
+            
+            # Safe validation string extraction check
+            if pasted_stream_result:
+                try:
+                    val = pasted_stream_result.value if hasattr(pasted_stream_result, 'value') else pasted_stream_result
+                    if isinstance(val, str) and val.startswith("data:image"):
+                        st.session_state['active_image_stream'] = val
+                except Exception:
+                    pass
+                
         elif image_option == "📤 Upload Local File from Device":
-            file_device_upload = st.file_uploader("Select image file:", type=["jpg", "jpeg", "png"])
+            file_device_upload = st.file_uploader("Select an image file:", type=["jpg", "jpeg", "png"])
             if file_device_upload:
                 st.session_state['active_image_stream'] = convert_file_to_cache_data(file_device_upload)
         else:
