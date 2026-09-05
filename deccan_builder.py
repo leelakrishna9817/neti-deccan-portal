@@ -197,18 +197,43 @@ if is_admin_url:
             button_label = "🚀 Publish and Save New Article to Archives"
 
         # Content Form Layout Canvas Fields
+        # FIXED: Injected dynamic file-bound key bindings to force the inputs to populate instantly on change
         st.markdown(f"### {page_header}")
-        headline_input = st.text_input(label="Main Headline:", value=default_headline, key="main_head_form")
-        sub_header_input = st.text_input(label="Sub-Header Option (Optional):", value=default_sub_header, key="sub_head_form")
+        
+        # Use an active file suffix identifier string to build unique session state hashes
+        f_suffix = active_file.replace('.json', '') if active_file else 'new'
+        
+        headline_input = st.text_input(
+            label="Main Headline:", 
+            value=default_headline, 
+            key=f"main_head_form_{f_suffix}"
+        )
+        
+        sub_header_input = st.text_input(
+            label="Sub-Header Option (Optional):", 
+            value=default_sub_header, 
+            key=f"sub_head_form_{f_suffix}"
+        )
         
         category_input = st.selectbox(
             label="News Section Category (వార్త విభాగం):",
             options=["Casual News", "Politics", "Sports", "Cinema", "International", "National", "Business"],
-            index=["Casual News", "Politics", "Sports", "Cinema", "International", "National", "Business"].index(default_category)
+            index=["Casual News", "Politics", "Sports", "Cinema", "International", "National", "Business"].index(default_category),
+            key=f"cat_form_{f_suffix}"
         )
         
-        body_input = st.text_area(label="News Content:", value=default_body, height=200, key="body_txt_form")
-        date_input = st.text_input(label="Publish Date:", value=default_date, key="pub_date_form")
+        body_input = st.text_area(
+            label="News Content:", 
+            value=default_body, 
+            height=250, 
+            key=f"body_txt_form_{f_suffix}"
+        )
+        
+        date_input = st.text_input(
+            label="Publish Date:", 
+            value=default_date, 
+            key=f"pub_date_form_{f_suffix}"
+        )
 
         st.write("### 🖼️ Layout Photo Settings")
         image_option = st.radio("Choose Image Input Method:", ("📋 Paste Copied Photo (Ctrl+V)", "📤 Upload Local File from Device", "Use Web Image URL"))
