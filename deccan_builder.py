@@ -24,6 +24,7 @@ if 'active_image_stream' not in st.session_state:
 
 url_parameters = st.query_params
 current_viewing_file = url_parameters.get("article", None)
+selected_category = url_parameters.get("category", "Casual News")
 is_admin_url = url_parameters.get("mode") == "admin"
 
 def convert_file_to_cache_data(uploaded_file):
@@ -50,18 +51,13 @@ for file in saved_files:
         continue
 
 # ====================================================================
-# 🎨 GLOBAL BRAND STYLING & CORE UTILITY HOOKS (SHARED MASTHEAD HOOKS)
+# 🎨 GLOBAL BRAND STYLING & PREMIUM HOOKS (ZERO STORAGE BUTTON HACKS)
 # ====================================================================
 st.markdown(
     """
     <style>
-        /* UPGRADE 1: Drastically decreases the white empty space between top window and your logo */
-        .block-container {
-            padding-top: 0.5rem !important;
-            padding-bottom: 2rem !important;
-        }
+        .block-container { padding-top: 0.5rem !important; padding-bottom: 2rem !important; }
         
-        /* Forceful removal of default cloud server tools on the public portal */
         iframe[src*="host-service"], iframe[title="Manage app"], [data-testid="stDeploymentButton"], footer, [data-testid="stHeader"] {
             display: none !important; visibility: hidden !important; height: 0px !important; opacity: 0 !important;
         }
@@ -79,92 +75,46 @@ st.markdown(
         .sidebar-clickable-card:hover { background-color: #fafafa; border-color: #cbd5e1; }
         
         .logo-english-sub {
-            font-size: 20px;
-            font-weight: 700;
-            color: #444444;
-            letter-spacing: 5px;
-            margin: 4px 0 0 0;
-            padding-left: 5px;
-            font-family: Arial, sans-serif;
+            font-size: 28px !important; font-weight: 800 !important; color: #111111 !important; letter-spacing: 6px !important; margin: 6px 0 2px 0 !important; font-family: 'Arial Black', Gadget, sans-serif;
         }
         
         .breaking-marquee-box {
-            background-color: #fff8f8;
-            border-top: 1px solid #ffcdd2;
-            border-bottom: 1px solid #ffcdd2;
-            padding: 6px 0;
-            margin-top: 10px;
-            margin-bottom: 25px;
+            background-color: #fff8f8; border-top: 1px solid #ffcdd2; border-bottom: 1px solid #ffcdd2; padding: 6px 0; margin-top: 10px; margin-bottom: 25px;
         }
-        .marquee-text-style {
-            font-size: 18px;
-            font-weight: 700;
-            color: #c62828;
-            font-family: sans-serif;
-        }
+        .marquee-text-style { font-size: 18px; font-weight: 700; color: #c62828; font-family: sans-serif; }
         
-        /* UPGRADE 2: Premium CSS layout mapping for your new enlarged clickable e-paper box button card */
+        /* Premium custom box button formatting rules supporting e-paper_logo.png rendering links */
         .custom-epaper-btn {
-            background-color: #f8fafc;
-            border: 2px solid #0d47a1;
-            border-radius: 6px;
-            padding: 12px 18px;
-            display: flex;
-            align-items: center;
-            justify-content: flex-start;
-            cursor: pointer;
-            text-decoration: none !important;
-            transition: background-color 0.2s, transform 0.1s;
-            margin-bottom: 15px;
+            background-color: #ffffff; border: 2px solid #0d47a1; border-radius: 6px; padding: 8px 14px; display: flex; align-items: center; justify-content: flex-start; cursor: pointer; text-decoration: none !important; transition: background-color 0.2s, transform 0.1s; margin-bottom: 20px; max-width: 320px;
         }
-        .custom-epaper-btn:hover {
-            background-color: #f1f5f9;
-            transform: translateY(-1px);
+        .custom-epaper-btn:hover { background-color: #f8fafc; transform: translateY(-1px); }
+        .custom-epaper-btn-img-frame { width: 85px; height: auto; margin-right: 15px; border-right: 1px solid #e2e8f0; padding-right: 10px; display: flex; align-items: center; }
+        .custom-epaper-btn-text { font-size: 19px; font-weight: 700; color: #0d47a1; font-family: Arial, sans-serif; line-height: 1.2; }
+        
+        /* New Custom Sidebar Navigation Channel Box Link Styles (NO DOTS!) */
+        .custom-category-btn-box {
+            border: 1px solid #e2e8f0; border-radius: 5px; padding: 10px 14px; margin-bottom: 8px; font-size: 16px; font-weight: 700; color: #334155; transition: all 0.2s; background-color: #f8fafc; text-align: left;
         }
-        .custom-epaper-btn-icon {
-            font-size: 26px;
-            margin-right: 14px;
-        }
-        .custom-epaper-btn-text {
-            font-size: 18px;
-            font-weight: 700;
-            color: #0d47a1;
-            font-family: Arial, sans-serif;
-        }
+        .custom-category-btn-box:hover { background-color: #f1f5f9; border-color: #cbd5e1; color: #0d47a1; }
+        .category-active { background-color: #e0f2fe !important; border-color: #0284c7 !important; color: #0369a1 !important; }
     </style>
     """,
     unsafe_allow_html=True
 )
 
 def render_unified_branding_masthead():
-    """UPGRADE 3: Compiles the exact same graphic title logo banner and marquee scroll across BOTH faces."""
     if os.path.exists("official_logo.png"):
         st.image("official_logo.png", width=320)
     else:
-        st.markdown("<h1 style='color:#0d47a1; font-size:48px; margin:0;'>డెక్కన్</h1><p style='color:#d32f2f; margin:0;'>ప్రజలకు, अधिकारियोंకు మధ్య వారధి</p>", unsafe_allow_html=True)
-        
+        st.markdown("<h1 style='color:#0d47a1; font-size:48px; margin:0;'>డెక్కన్</h1><p style='color:#d32f2f; margin:0;'>ప్రజలకు, అధికారులకు మధ్య వారధి</p>", unsafe_allow_html=True)
     st.markdown("<div class='logo-english-sub'>NETIDECCAN</div>", unsafe_allow_html=True)
-    
-    st.markdown(
-        """
-        <div class='breaking-marquee-box'>
-            <marquee behavior='scroll' direction='left' scrollamount='6'>
-                <span class='marquee-text-style'>
-                    🔥 నేటి డెక్కన్ వార్తలకు స్వాగతం తాజా రాజకీయ, ఆర్థిక, క్రీడా వార్తలు మీ కోసం ప్రతి క్షణం నిజమైన సమాచారం నేటి డెక్కన్ – మీ నమ్మకమైన వార్తా వేదిక.
-                </span>
-            </marquee>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+    st.markdown("<div class='breaking-marquee-box'><marquee behavior='scroll' direction='left' scrollamount='6'><span class='marquee-text-style'>🔥 నేటి డెక్కన్ వార్తలకు స్వాగతం తాజా రాజకీయ, ఆర్థిక, క్రీడా వార్తలు మీ కోసం ప్రతి క్షణం నిజమైన సమాచారం నేటి డెక్కన్ – మీ నమ్మకమైన వార్తా వేదిక.</span></marquee></div>", unsafe_allow_html=True)
 
 # ====================================================================
 # FACE 1: PRIVATE EDITING WORKSPACE GATEWAY (Activated via ?mode=admin)
 # ====================================================================
 if is_admin_url:
-    # Render the identical graphic brand title and ticking marquee here on the admin canvas
     render_unified_branding_masthead()
-    
     st.markdown("<div style='background-color:#f1f5f9; padding:10px; border-radius:4px; text-align:center;'><h4>✍️ నేటి డెక్కన్ - EDIT CONTROL PANEL</h4></div><br>", unsafe_allow_html=True)
     
     st.sidebar.title("🔐 Secure Login Gateway")
@@ -175,21 +125,23 @@ if is_admin_url:
             if user_input == ADMIN_USERNAME and pass_input == ADMIN_PASSWORD:
                 st.session_state["authenticated"] = True
                 st.rerun()
-            else:
-                st.error("❌ Incorrect credentials.")
+            else: st.error("❌ Incorrect credentials.")
     else:
         st.sidebar.success("🟢 Authenticated Admin")
         if st.sidebar.button("🚪 Log Out"):
             st.session_state["authenticated"] = False
             st.rerun()
             
+        st.sidebar.markdown("---")
+        st.sidebar.subheader("📁 Edit/View Past Articles")
+        
+        # UPGRADE: Compiles selection list dropdown to review, modify, or rewrite old saved records instantly
         editor_map = {"--- ➕ Create New Article ---": None}
         editor_map.update(all_articles)
         selected_headline = st.sidebar.radio("Select Article to Edit:", list(editor_map.keys()))
         active_file = editor_map[selected_headline]
         is_edit_mode = active_file is not None
 
-        # FIX: Explicitly initialize the missing button_label variables to prevent NameError crashes
         if is_edit_mode:
             with open(os.path.join(SAVE_FOLDER, active_file), "r", encoding="utf-8") as f:
                 loaded_data = json.load(f)
@@ -197,112 +149,81 @@ if is_admin_url:
             default_sub_header = loaded_data.get("sub_header", "")
             default_body = loaded_data.get("content", "")
             default_date = loaded_data.get("date", "")
-            default_category = loaded_data.get("category", "All News")
+            default_category = loaded_data.get("category", "Casual News")
             default_image_log = loaded_data.get("associated_image", "")
-            page_header = f"📝 Editing Article: {selected_headline}"
-            button_label = "💾 Update and Save Changes to This Article"  # <--- MUST BE HERE
-            if default_image_log:
-                st.session_state['active_image_stream'] = default_image_log
+            page_header = f"📝 Editing Past Article: {selected_headline}"
+            button_label = "💾 Update and Save Changes to This Article"
+            if default_image_log: st.session_state['active_image_stream'] = default_image_log
         else:
             default_headline = ""
             default_sub_header = ""
             default_body = ""
             default_date = datetime.now().strftime("%B %d, %Y")
-            default_category = "All News"
+            default_category = "Casual News"
             default_image_log = ""
             page_header = "➕ Create and Format a New Article"
-            button_label = "🚀 Publish and Save New Article to Archives"  # <--- MUST BE HERE
+            button_label = "🚀 Publish and Save New Article to Archives"
 
+        st.markdown(f"### {page_header}")
         headline_input = st.text_input(label="Main Headline:", value=default_headline, key="main_head_form")
-        sub_header_input = st.text_input(label="Sub-Header Option:", value=default_sub_header, key="sub_head_form")
+        sub_header_input = st.text_input(label="Sub-Header Option (Optional):", value=default_sub_header, key="sub_head_form")
+        
+        # UPGRADE: Modified categorical news list structure matching your exact requirements
+        category_input = st.selectbox(
+            label="News Section Category (వార్త విభాగం):",
+            options=["Casual News", "Politics", "Sports", "Cinema", "International", "National", "Business"],
+            index=["Casual News", "Politics", "Sports", "Cinema", "International", "National", "Business"].index(default_category)
+        )
+        
         body_input = st.text_area(label="News Content:", value=default_body, height=200, key="body_txt_form")
         date_input = st.text_input(label="Publish Date:", value=default_date, key="pub_date_form")
 
         st.write("### 🖼️ Layout Photo Settings")
         image_option = st.radio("Choose Image Input Method:", ("📋 Paste Copied Photo (Ctrl+V)", "📤 Upload Local File from Device", "Use Web Image URL"))
-
-        # FIX: Explicitly initialize the variable as None first so it always exists and avoids NameErrors
         pasted_stream_result = None
 
         if image_option == "📋 Paste Copied Photo (Ctrl+V)":
-            st.write("👇 **Click once inside the box below**, then press **Ctrl + V** to paste your clipboard picture:")
-            paste_html_bridge = """
-            <div id="canvas-paste" style="border: 2px dashed #999; background: #fdfdfd; padding: 22px; text-align: center; color: #444; font-family: sans-serif; cursor: pointer; font-weight: bold; border-radius: 4px;">
-                [ CLICK HERE & PRESS CTRL+V TO PASTE IMAGE ]
-            </div>
-            <script>
-            document.addEventListener('paste', function (e) {
-                var items = e.clipboardData.items;
-                for (var i = 0; i < items.length; i++) {
-                    if (items[i].type.indexOf('image') !== -1) {
-                        var blob = items[i].getAsFile();
-                        var reader = new FileReader();
-                        reader.onload = function (event) {
-                            document.getElementById('canvas-paste').style.background = '#eafaea';
-                            document.getElementById('canvas-paste').style.borderColor = '#4caf50';
-                            document.getElementById('canvas-paste').innerText = '✅ Image Captured into App Memory!';
-                            window.parent.postMessage({type: 'streamlit:setComponentValue', value: event.target.result}, '*');
-                        };
-                        reader.readAsDataURL(blob);
-                    }
-                }
-            });
-            </script>
-            """
-            pasted_stream_result = st.components.v1.html(paste_html_bridge, height=95)
-            
-            # Safe validation string extraction check
+            pasted_stream_result = st.components.v1.html('<div id="c-paste" style="border:2px dashed #999; padding:20px; text-align:center;">[ CLICK HERE & CTRL+V ]</div><script>document.addEventListener("paste",function(e){var items=e.clipboardData.items;for(var i=0;i<items.length;i++){if(items[i].type.indexOf("image")!==-1){var blob=items[i].getAsFile();var reader=new FileReader();reader.onload=function(ev){window.parent.postMessage({type:"streamlit:setComponentValue",value:ev.target.result},"*");};reader.readAsDataURL(blob);}}});</script>', height=95)
             if pasted_stream_result:
                 try:
                     val = pasted_stream_result.value if hasattr(pasted_stream_result, 'value') else pasted_stream_result
-                    if isinstance(val, str) and val.startswith("data:image"):
-                        st.session_state['active_image_stream'] = val
-                except Exception:
-                    pass
-                
+                    if isinstance(val, str) and val.startswith("data:image"): st.session_state['active_image_stream'] = val
+                except Exception: pass
         elif image_option == "📤 Upload Local File from Device":
-            file_device_upload = st.file_uploader("Select an image file:", type=["jpg", "jpeg", "png"])
-            if file_device_upload:
-                st.session_state['active_image_stream'] = convert_file_to_cache_data(file_device_upload)
+            file_device_upload = st.file_uploader("Select image file:", type=["jpg", "jpeg", "png"])
+            if file_device_upload: st.session_state['active_image_stream'] = convert_file_to_cache_data(file_device_upload)
         else:
             initial_url = default_image_log if default_image_log and default_image_log.startswith("http") else "https://unsplash.com"
             image_url = st.text_input("Paste Image URL:", value=initial_url, key="img_url_form")
-            if image_url:
-                st.session_state['active_image_stream'] = image_url
+            if image_url: st.session_state['active_image_stream'] = image_url
 
         st.write("### 💾 Database Control Actions")
         col_save, col_delete = st.columns([0.7, 0.3])
-        
         with col_save:
             if st.button(button_label, use_container_width=True, key="save_art_btn"):
-                if not headline_input.strip():
-                    st.error("❌ Heading cannot be blank!")
+                if not headline_input.strip(): st.error("❌ Heading cannot be blank!")
                 else:
                     timestamp_str = active_file.replace("article_", "").replace(".json", "") if is_edit_mode else datetime.now().strftime("%Y%m%d_%H%M%S")
                     file_path = f"{SAVE_FOLDER}/article_{timestamp_str}.json"
-                    article_data = {"headline": headline_input, "sub_header": sub_header_input, "content": body_input, "date": date_input, "associated_image": st.session_state['active_image_stream'] if st.session_state['active_image_stream'] else "", "exported_at": timestamp_str}
-                    with open(file_path, "w", encoding="utf-8") as f:
-                        json.dump(article_data, f, ensure_ascii=False, indent=4)
-                    st.success("🎉 Article Published!")
+                    article_data = {"headline": headline_input, "sub_header": sub_header_input, "category": category_input, "content": body_input, "date": date_input, "associated_image": st.session_state['active_image_stream'] if st.session_state['active_image_stream'] else "", "exported_at": timestamp_str}
+                    with open(file_path, "w", encoding="utf-8") as f: json.dump(article_data, f, ensure_ascii=False, indent=4)
+                    st.success("🎉 Article Saved and Synced Successfully!")
                     st.session_state['active_image_stream'] = None
                     st.rerun()
-
         with col_delete:
             if is_edit_mode:
                 if st.button("🗑️ Delete This Article Permanently", type="secondary", use_container_width=True, key="del_art_btn"):
                     file_to_remove = os.path.join(SAVE_FOLDER, active_file)
-                    if os.path.exists(file_to_remove):
-                        os.remove(file_to_remove)
-                        st.session_state['active_image_stream'] = None
-                        st.rerun()
+                    if os.path.exists(file_to_remove): os.remove(file_to_remove)
+                    st.success("💥 Article Deleted!")
+                    st.rerun()
 
-        # Admin Live Workspace Layout Preview Container Box
         st.markdown("---")
         st.write("### 👀 Live Layout Preview:")
         with st.container(border=True):
             if headline_input: st.markdown(f"## {headline_input}")
             if sub_header_input: st.markdown(f"#### *{sub_header_input}*")
-            st.caption(f"📅 తేదీ: {date_input}")
+            st.caption(f"📅 తేదీ: {date_input} | 🏷️ వర్గం: {category_input}")
             st.markdown("---")
             col_p_text, col_p_photo = st.columns([0.65, 0.35], gap="large")
             with col_p_text: st.write(body_input)
@@ -313,83 +234,54 @@ if is_admin_url:
 # FACE 2: PREMIUM PUBLIC NEWS READER (The Viewers Face)
 # ====================================================================
 else:
-    # ----------------------------------------------------------------
-    # SUBPAGE CONTROLLER: SINGLE ARTICLE VIEWER PAGE
-    # ----------------------------------------------------------------
     if current_viewing_file is not None:
         if not os.path.exists(os.path.join(SAVE_FOLDER, current_viewing_file)):
             st.query_params.clear()
             st.rerun()
-            
         with open(os.path.join(SAVE_FOLDER, current_viewing_file), "r", encoding="utf-8") as f:
             full_art = json.load(f)
-            
         if st.button("⬅️ తిరిగి హోమ్‌పేజీకి (Back to Homepage)", type="primary"):
             st.query_params.clear()
             st.rerun()
-            
         st.markdown(f"<h1 style='font-size:36px; font-weight:800; color:#000; margin-top:15px;'>{full_art.get('headline')}</h1>", unsafe_allow_html=True)
-        if full_art.get('sub_header'):
-            st.markdown(f"<h3 style='color:#55; font-style:italic; font-size:18px; margin-top:4px;'>{full_art.get('sub_header')}</h3>", unsafe_allow_html=True)
-        st.caption(f"📅 తేదీ: {full_art.get('date')} | 🏷️ వర్గం: {full_art.get('category', 'All News')}")
+        if full_art.get('sub_header'): st.markdown(f"<h3 style='color:#55; font-style:italic; font-size:18px; margin-top:4px;'>{full_art.get('sub_header')}</h3>", unsafe_allow_html=True)
+        st.caption(f"📅 తేదీ: {full_art.get('date')} | 🏷️ వర్గం: {full_art.get('category', 'Casual News')}")
         st.markdown("<hr style='border-top:2px solid #222;'>", unsafe_allow_html=True)
-        
         c_l, c_r = st.columns([0.65, 0.35], gap="large")
-        with c_l:
-            st.markdown(f"<p style='font-size:18px; line-height:1.75;'>{full_art.get('content')}</p>", unsafe_allow_html=True)
+        with c_l: st.markdown(f"<p style='font-size:18px; line-height:1.75;'>{full_art.get('content')}</p>", unsafe_allow_html=True)
         with c_r:
             f_img = full_art.get('associated_image')
-            if f_img:
-                st.image(f_img, use_container_width=True)
-
-    # ----------------------------------------------------------------
-    # MAIN PORTAL HOMEPAGE: MULTI-COLUMN DESIGN WITH LEFT CATEGORY SIDEBAR
-    # ----------------------------------------------------------------
+            if f_img: st.image(f_img, use_container_width=True)
     else:
         render_unified_branding_masthead()
         
-        # Load your official brand image asset straight inside your memory cache
-        b64_logo_str = ""
-        if os.path.exists("official_logo.png"):
+        b64_epaper_logo = ""
+        if os.path.exists("e-paper_logo.png"):
             import base64
-            with open("official_logo.png", "rb") as logo_file:
-                b64_logo_str = f"data:image/png;base64,{base64.b64encode(logo_file.read()).decode('utf-8')}"
-        else:
-            b64_logo_str = "https://unsplash.com"
+            with open("e-paper_logo.png", "rb") as logo_file: b64_epaper_logo = f"data:image/png;base64,{base64.b64encode(logo_file.read()).decode('utf-8')}"
+        elif os.path.exists("official_logo.png"):
+            import base64
+            with open("official_logo.png", "rb") as logo_file: b64_epaper_logo = f"data:image/png;base64,{base64.b64encode(logo_file.read()).decode('utf-8')}"
+        else: b64_epaper_logo = "https://unsplash.com"
 
-        # UPPER CONTROL ROW: Contains your enlarged button box on left and search bar on right
         col_ctrl_btn, col_ctrl_search = st.columns([0.35, 0.65], gap="large")
         with col_ctrl_btn:
-            st.markdown(
-                f"""
-                <a href="http://netideccan.com" class="custom-epaper-btn" target="_blank">
-                    <div class="custom-epaper-btn-img-frame">
-                        <img src="{b64_logo_str}"/>
-                    </div>
-                    <span class="custom-epaper-btn-text">Read Print<br>E-Paper</span>
-                </a>
-                """,
-                unsafe_allow_html=True
-            )
+            st.markdown(f'<a href="http://netideccan.com" class="custom-epaper-btn" target="_blank"><div class="custom-epaper-btn-img-frame"><img src="{b64_epaper_logo}"/></div><span class="custom-epaper-btn-text">Read Print<br>E-Paper</span></a>', unsafe_allow_html=True)
         with col_ctrl_search:
             search_query = st.text_input("🔍 వెతకండి (Search news by headline keyword):", placeholder="Type keywords here to filter articles...", key="news_search_reader_field").strip()
             
         st.markdown("<br>", unsafe_allow_html=True)
-
-        # FIXED COLUMN SPLIT LAYOUT ENGINE RE-ADDED HERE
-        col_left_categories, col_center_news, col_right_trending = st.columns([0.20, 0.53, 0.27], gap="medium")
+        col_left_categories, col_center_news, col_right_trending = st.columns([0.22, 0.51, 0.27], gap="medium")
         
-        # COLUMN A: Left Category Selector Sidebar Panel Box
         with col_left_categories:
-            st.markdown("<h4 style='margin-top:0; font-weight:700; color:#333; border-bottom:2px solid #ccc; padding-bottom:5px;'>🏷️ వార్తా వర్గాలు</h4>", unsafe_allow_html=True)
+            st.markdown("<h4 style='margin-top:0; font-weight:700; color:#333; border-bottom:2px solid #ccc; padding-bottom:5px;'>📰 వార్తా వర్గాలు</h4>", unsafe_allow_html=True)
             
-            selected_category = st.radio(
-                label="Select Category Filters:",
-                options=["All News", "Politics", "Sports", "District News", "Cinema"],
-                label_visibility="collapsed"
-            )
+            available_categories = ["Casual News", "Politics", "Sports", "Cinema", "International", "National", "Business"]
+            for cat_name in available_categories:
+                is_active = (selected_category == cat_name)
+                active_class = "category-active" if is_active else ""
+                st.markdown(f'<a href="?category={cat_name}" target="_self" style="text-decoration:none;"><div class="custom-category-btn-box {active_class}">📂 {cat_name}</div></a>', unsafe_allow_html=True)
 
-        # COLUMN B: Center News Feed (Filtered by active Category selection!)
         with col_center_news:
             st.markdown(f"<h3 style='margin-top:0; font-weight:800; border-bottom:2px solid #333; padding-bottom:5px;'>📰 {selected_category} Updates</h3>", unsafe_allow_html=True)
             st.write("") 
@@ -397,15 +289,11 @@ else:
             visible_articles_count = 0
             if all_articles:
                 for headline, file in all_articles.items():
-                    if search_query and search_query.lower() not in headline.lower():
-                        continue
-                        
-                    with open(os.path.join(SAVE_FOLDER, file), "r", encoding="utf-8") as f:
-                        art = json.load(f)
-                        
-                    art_category = art.get("category", "All News")
-                    if selected_category != "All News" and art_category != selected_category:
-                        continue
+                    if search_query and search_query.lower() not in headline.lower(): continue
+                    with open(os.path.join(SAVE_FOLDER, file), "r", encoding="utf-8") as f: art = json.load(f)
+                    
+                    art_category = art.get("category", "Casual News")
+                    if art_category != selected_category: continue
                         
                     visible_articles_count += 1
                     arc_headline = art.get("headline", "")
@@ -418,28 +306,7 @@ else:
                     img_tag_html = f'<img src="{arc_image}" style="width:100%; max-height:150px; object-fit:cover; border-radius:4px;"/>' if arc_image else ''
                     sub_tag_html = f'<p style="color:#555; font-style:italic; font-size:14px; margin-top:2px; margin-bottom:4px;">{arc_sub_header}</p>' if arc_sub_header else ''
                     
-                    st.markdown(
-                        f"""
-                        <a href="?article={file}" target="_self" class="news-card-anchor">
-                            <div class="news-clickable-box">
-                                <table style="width:100%; border-collapse:collapse; border:none;">
-                                    <tr>
-                                        <td style="width:68%; vertical-align:top; border:none; padding:0; padding-right:15px;">
-                                            <h4 style="color:#000; font-weight:700; margin:0; font-size:22px; line-height:1.3;">{arc_headline}</h4>
-                                            {sub_tag_html}
-                                            <p style="color:#999; font-size:11px; margin:4px 0;">📅 తేదీ: {arc_date}</p>
-                                            <p style="font-size:15px; color:#333; margin:0; line-height:1.5;">{news_snippet}</p>
-                                        </td>
-                                        <td style="width:32%; vertical-align:top; border:none; padding:0;">
-                                            {img_tag_html}
-                                        </td>
-                                    </tr>
-                                </table>
-                            </div>
-                        </a>
-                        """,
-                        unsafe_allow_html=True
-                    )
+                    st.markdown(f'<a href="?category={selected_category}&article={file}" target="_self" class="news-card-anchor"><div class="news-clickable-box"><table style="width:100%; border-collapse:collapse; border:none;"><tr><td style="width:68%; vertical-align:top; border:none; padding:0; padding-right:15px;"><h4 style="color:#000; font-weight:700; margin:0; font-size:22px; line-height:1.3;">{arc_headline}</h4>{sub_tag_html}<p style="color:#999; font-size:11px; margin:4px 0;">📅 తేదీ: {arc_date}</p><p style="font-size:15px; color:#333; margin:0; line-height:1.5;">{news_snippet}</p></td><td style="width:32%; vertical-align:top; border:none; padding:0;">{img_tag_html}</td></tr></table></div></a>', unsafe_allow_html=True)
             
             if visible_articles_count == 0:
                 st.info(f"ప్రస్తుతానికి '{selected_category}' విభాగంలో ఎటువంటి వార్తలు లేవు.")
@@ -448,12 +315,9 @@ else:
         with col_right_trending:
             st.markdown("<h3 style='margin-top:0; color:#c00000; border-bottom:2px solid #c00000; padding-bottom:5px;'>🔥 ముఖ్యాంశాలు</h3>", unsafe_allow_html=True)
             st.write("") 
-            
             if all_articles:
                 for side_headline, side_file in list(all_articles.items())[:6]:
-                    with open(os.path.join(SAVE_FOLDER, side_file), "r", encoding="utf-8") as f:
-                        s_art = json.load(f)
-                        
+                    with open(os.path.join(SAVE_FOLDER, side_file), "r", encoding="utf-8") as f: s_art = json.load(f)
                     s_head = s_art.get("headline", "")
                     s_sub = s_art.get("sub_header", "")
                     s_img = s_art.get("associated_image", "")
@@ -462,25 +326,6 @@ else:
                     s_sub_val = s_sub if s_sub else ""
                     sub_html = f'<p style="font-size:11px; color:#666; margin-top:3px; margin-bottom:0; line-height:1.2;">{s_sub_val[:40]}...</p>' if s_sub_val else ''
                     
-                    st.markdown(
-                        f"""
-                        <a href="?article={side_file}" target="_self" class="news-card-anchor">
-                            <div class="sidebar-clickable-card">
-                                <table style="width:100%; border-collapse:collapse; border:none;">
-                                    <tr>
-                                        <td style="width:70%; vertical-align:top; border:none; padding:0; padding-right:8px;">
-                                            <p style="font-size:15px; font-weight:700; line-height:1.3; color:#111; margin:0;">{s_head}</p>
-                                            {sub_html}
-                                        </td>
-                                        <td style="width:30%; vertical-align:middle; border:none; padding:0;">
-                                            {img_html}
-                                        </td>
-                                    </tr>
-                                </table>
-                            </div>
-                        </a>
-                        """,
-                        unsafe_allow_html=True
-                    )
+                    st.markdown(f'<a href="?category={selected_category}&article={side_file}" target="_self" class="news-card-anchor"><div class="sidebar-clickable-card"><table style="width:100%; border-collapse:collapse; border:none;"><tr><td style="width:70%; vertical-align:top; border:none; padding:0; padding-right:8px;"><p style="font-size:15px; font-weight:700; line-height:1.3; color:#111; margin:0;">{s_head}</p>{sub_html}</td><td style="width:30%; vertical-align:middle; border:none; padding:0;">{img_html}</td></tr></table></div></a>', unsafe_allow_html=True)
             else:
                 st.caption("No trending headlines recorded in archives yet.")
