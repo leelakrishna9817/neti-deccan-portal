@@ -129,6 +129,17 @@ render_unified_branding_masthead()
 if is_admin_url:
     st.markdown("<div style='background-color:#f1f5f9; padding:10px; border-radius:4px; text-align:center;'><h4>✍️ నేటి డెక్కన్ - EDIT CONTROL PANEL</h4></div><br>", unsafe_allow_html=True)
     
+    # FIX: Initialize baseline default variables at the very entry line to prevent NameErrors if not logged in yet
+    default_headline = ""
+    default_sub_header = ""
+    default_body = ""
+    default_date = datetime.now().strftime("%B %d, %Y")
+    default_category = "Casual News"
+    default_image_log = ""
+    page_header = "➕ Create and Format a New Article"
+    button_label = "🚀 Publish and Save New Article to Archives"
+    active_file = None
+
     if not st.session_state["authenticated"]:
         user_input = st.text_input("Username:", placeholder="Type user id...", key="adm_user_in")
         pass_input = st.text_input("Password:", type="password", placeholder="Type secure key...", key="adm_pass_in")
@@ -166,27 +177,19 @@ if is_admin_url:
             page_header = f"📝 Editing Past Article: {selected_headline}"
             button_label = "💾 Update and Save Changes to This Article"
             if default_image_log: st.session_state['active_image_stream'] = default_image_log
-        else:
-            default_headline = ""
-            default_sub_header = ""
-            default_body = ""
-            default_date = datetime.now().strftime("%B %d, %Y")
-            default_category = "Casual News"
-            default_image_log = ""
-            page_header = "➕ Create and Format a New Article"
-            button_label = "🚀 Publish and Save New Article to Archives"
 
-        st.markdown(f"### {page_header}")
-        headline_input = st.text_input(label="Main Headline:", value=default_headline, key="main_head_form")
-        sub_header_input = st.text_input(label="Sub-Header Option (Optional):", value=default_sub_header, key="sub_head_form")
-        
-        category_input = st.selectbox(
-            label="News Section Category (వార్త విభాగం):",
-            options=["Casual News", "Politics", "Sports", "Cinema", "International", "National", "Business"],
-            index=["Casual News", "Politics", "Sports", "Cinema", "International", "National", "Business"].index(default_category)
-        )
-        
-        body_input = st.text_area(label="News Content:", value=default_body, height=200, key="body_txt_form")
+    # Wrap the administrative data inputs tightly so they only read values safely
+    st.markdown(f"### {page_header}")
+    headline_input = st.text_input(label="Main Headline:", value=default_headline, key="main_head_form")
+    sub_header_input = st.text_input(label="Sub-Header Option (Optional):", value=default_sub_header, key="sub_head_form")
+    
+    category_input = st.selectbox(
+        label="News Section Category (వార్త విభాగం):",
+        options=["Casual News", "Politics", "Sports", "Cinema", "International", "National", "Business"],
+        index=["Casual News", "Politics", "Sports", "Cinema", "International", "National", "Business"].index(default_category)
+    )
+    
+    body_input = st.text_area(label="News Content:", value=default_body, height=200, key="body_txt_form")
     date_input = st.text_input(label="Publish Date:", value=default_date, key="pub_date_form")
 
     st.write("### 🖼️ Layout Photo Settings")
