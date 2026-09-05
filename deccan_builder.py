@@ -2,6 +2,30 @@ import streamlit as st
 import json
 import os
 from datetime import datetime
+import streamlit.components.v1 as components
+
+# 1. ALWAYS FIRST: Initialize page configuration
+st.set_page_config(page_title="Neti Deccan - నేటి డెక్కన్", layout="wide", initial_sidebar_state="expanded")
+
+# 2. Place this meta tag script right after page config
+components.html(
+    """
+    <script>
+        var meta = document.createElement('meta');
+        meta.name = "google-site-verification";
+        meta.content = "PASTE_YOUR_ACTUAL_GOOGLE_CODE_HERE"; 
+        document.getElementsByTagName('head')[0].appendChild(meta);
+    </script>
+    """,
+    height=0,
+    width=0
+)
+
+# Your actual news app code continues below...
+st.title("Neti Deccan News")
+
+SAVE_FOLDER = "NetiDeccan_Articles"
+# ... rest of your code stays exactly the same
 
 # 1. Initialize page configuration to wide layout format with expanded sidebar state
 st.set_page_config(page_title="Neti Deccan - నేటి డెక్కన్", layout="wide", initial_sidebar_state="expanded")
