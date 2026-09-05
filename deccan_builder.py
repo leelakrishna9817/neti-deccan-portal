@@ -128,7 +128,7 @@ if is_admin_url:
                 st.rerun()
 
 # ====================================================================
-# FACE 2: PREMIUM PUBLIC NEWS READER (Branded Masthead + Marquee Scroll)
+# FACE 2: PREMIUM PUBLIC NEWS READER (Real Logo Branding + Marquee Scroll)
 # ====================================================================
 else:
     st.markdown(
@@ -150,235 +150,193 @@ else:
             }
             .sidebar-clickable-card:hover { background-color: #fafafa; border-color: #cbd5e1; }
             
-            /* Custom Styled Brand Masthead Elements matching the official newspaper header logo blueprint */
-            .logo-masthead-container {
-                text-align: left;
-                margin-top: 10px;
-                margin-bottom: 5px;
-                padding-left: 5px;
-            }
-            .logo-slogan-top {
-                color: #d32f2f;
-                font-size: 16px;
-                font-weight: 700;
-                margin: 0 0 5px 0;
-                font-family: sans-serif;
-            }
-            .logo-sun-icon {
-                display: block;
-                margin-bottom: -15px;
-                margin-left: 120px;
-                width: 55px;
-                height: auto;
-            }
-            .logo-main-title-telugu {
-                font-size: 58px;
-                font-weight: 900;
-                color: #0d47a1;
-                margin: 0;
-                padding: 0;
-                line-height: 1.0;
-                font-family: 'Segoe UI', Arial, sans-serif;
-                letter-spacing: -1px;
-            }
-            .logo-tag-sub-telugu {
-                color: #333333;
-                font-size: 13px;
-                font-weight: 600;
-                margin: 4px 0 0 0;
-                letter-spacing: 1px;
-            }
+            /* Custom English branding subheader alignment below real logo asset */
             .logo-english-sub {
+                font-size: 20px;
+                font-weight: 700;
+                color: #444444;
+                letter-spacing: 5px;
+                margin: 4px 0 0 0;
+                padding-left: 5px;
+                font-family: Arial, sans-serif;
+            }
+            
+            /* Single row marquee welcome text container box layout configuration rules */
+            .breaking-marquee-box {
+                background-color: #fff8f8;
+                border-top: 1px solid #ffcdd2;
+                border-bottom: 1px solid #ffcdd2;
+                padding: 6px 0;
+                margin-top: 10px;
+                margin-bottom: 25px;
+            }
+            .marquee-text-style {
                 font-size: 18px;
                 font-weight: 700;
-                color: #555555;
-                letter-spacing: 4px;
-            margin: 3px 0 0 0;
-            font-family: Arial, sans-serif;
-        }
-        
-        /* Single row marquee text styles */
-        .breaking-marquee-box {
-            background-color: #fff8f8;
-            border-top: 1px solid #ffcdd2;
-            border-bottom: 1px solid #ffcdd2;
-            padding: 6px 0;
-            margin-bottom: 25px;
-        }
-        .marquee-text-style {
-            font-size: 18px;
-            font-weight: 700;
-            color: #c62828;
-            font-family: sans-serif;
-        }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
-# ----------------------------------------------------------------
-# SUBPAGE CONTROLLER: SINGLE ARTICLE VIEWER PAGE
-# ----------------------------------------------------------------
-if current_viewing_file is not None:
-    if not os.path.exists(os.path.join(SAVE_FOLDER, current_viewing_file)):
-        st.query_params.clear()
-        st.rerun()
-        
-    with open(os.path.join(SAVE_FOLDER, current_viewing_file), "r", encoding="utf-8") as f:
-        full_art = json.load(f)
-        
-    if st.button("⬅️ తిరిగి హోమ్‌పేజీకి (Back to Homepage)", type="primary"):
-        st.query_params.clear()
-        st.rerun()
-        
-    st.markdown(f"<h1 style='font-size:36px; font-weight:800; color:#000; margin-top:15px;'>{full_art.get('headline')}</h1>", unsafe_allow_html=True)
-    if full_art.get('sub_header'):
-        st.markdown(f"<h3 style='color:#55; font-style:italic; font-size:18px; margin-top:4px;'>{full_art.get('sub_header')}</h3>", unsafe_allow_html=True)
-    st.caption(f"📅 తేదీ: {full_art.get('date')}")
-    st.markdown("<hr style='border-top:2px solid #222;'>", unsafe_allow_html=True)
-    
-    c_l, c_r = st.columns([0.65, 0.35], gap="large")
-    with c_l:
-        st.markdown(f"<p style='font-size:18px; line-height:1.75;'>{full_art.get('content')}</p>", unsafe_allow_html=True)
-    with c_r:
-        f_img = full_art.get('associated_image')
-        if f_img:
-            st.image(f_img, use_container_width=True)
-
-# ----------------------------------------------------------------
-# MAIN PORTAL HOMEPAGE: BRANDED TOP MASTHEAD + LIVE MARQUEE SCROLL
-# ----------------------------------------------------------------
-else:
-    # STEP 1: Render the Custom Recreated Newspaper Logo Brand Masthead on Top Left
-    st.markdown(
-        """
-        <div class='logo-masthead-container'>
-            <p class='logo-slogan-top'>ప్రజలకు, అధికారులకు మధ్య వారధి</p>
-            <svg class='logo-sun-icon' viewBox='0 0 100 60'>
-                <circle cx='50' cy='50' r='25' fill='#fbc02d'/>
-                <path d='M50,20 L50,5 M50,80 L50,95 M20,50 L5,50 M80,50 L95,50 M29,29 L18,18 M71,71 L82,82 M29,71 L18,82 M71,29 L82,18' stroke='#fbc02d' stroke-width='4'/>
-            </svg>
-            <h1 class='logo-main-title-telugu'>డెక్కన్</h1>
-            <p class='logo-tag-sub-telugu'>తెలుగు దినపత్రిక</p>
-            <div class='logo-english-sub'>NETIDECCAN</div>
-        </div>
+                color: #c62828;
+                font-family: sans-serif;
+            }
+        </style>
         """,
         unsafe_allow_html=True
     )
-    
-    # STEP 2: Continuous Single-Row Horizontal Marquee Welcome Ticker Text directly below Masthead
-    st.markdown(
-        """
-        <div class='breaking-marquee-box'>
-            <marquee behavior='scroll' direction='left' scrollamount='6'>
-                <span class='marquee-text-style'>
-                    🔥 నేటి డెక్కన్ వార్తలకు స్వాగతం తాజా రాజకీయ, ఆర్థిక, క్రీడా వార్తలు మీ కోసం ప్రతి క్షణం నిజమైన సమాచారం నేటి డెక్కన్ – మీ నమ్మకమైన వార్తా వేదిక.
-                </span>
-            </marquee>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-    
-    # Control row elements setup
-    col_ctrl_btn, col_ctrl_search = st.columns([0.22, 0.78], gap="large")
-    with col_ctrl_btn:
-        st.link_button("📰 Read Print E-Paper", "http://netideccan.com", use_container_width=True)
-    with col_ctrl_search:
-        search_query = st.text_input("🔍 వెతకండి (Search news by headline keyword):", placeholder="Type keywords here to filter articles...").strip()
-        
-    st.markdown("<br>", unsafe_allow_html=True)
 
-    # STEP 3: Split main canvas grid layout (70% Center Main News feed, 30% Right Sidebar Feed)
-    col_center_news, col_right_trending = st.columns([0.68, 0.32], gap="large")
-    
-    # COLUMN A: Center Breaking News
-    with col_center_news:
-        st.markdown("<h3 style='margin-top:0; font-weight:800; border-bottom:2px solid #333; padding-bottom:5px;'>📰 తాజా వార్తలు (Latest News Updates)</h3>", unsafe_allow_html=True)
-        st.write("") 
+    # ----------------------------------------------------------------
+    # SUBPAGE CONTROLLER: SINGLE ARTICLE VIEWER PAGE
+    # ----------------------------------------------------------------
+    if current_viewing_file is not None:
+        if not os.path.exists(os.path.join(SAVE_FOLDER, current_viewing_file)):
+            st.query_params.clear()
+            st.rerun()
+            
+        with open(os.path.join(SAVE_FOLDER, current_viewing_file), "r", encoding="utf-8") as f:
+            full_art = json.load(f)
+            
+        if st.button("⬅️ తిరిగి హోమ్‌పేజీకి (Back to Homepage)", type="primary"):
+            st.query_params.clear()
+            st.rerun()
+            
+        st.markdown(f"<h1 style='font-size:36px; font-weight:800; color:#000; margin-top:15px;'>{full_art.get('headline')}</h1>", unsafe_allow_html=True)
+        if full_art.get('sub_header'):
+            st.markdown(f"<h3 style='color:#55; font-style:italic; font-size:18px; margin-top:4px;'>{full_art.get('sub_header')}</h3>", unsafe_allow_html=True)
+        st.caption(f"📅 తేదీ: {full_art.get('date')}")
+        st.markdown("<hr style='border-top:2px solid #222;'>", unsafe_allow_html=True)
         
-        if all_articles:
-            for headline, file in all_articles.items():
-                if search_query and search_query.lower() not in headline.lower():
-                    continue
-                    
-                with open(os.path.join(SAVE_FOLDER, file), "r", encoding="utf-8") as f:
-                    art = json.load(f)
-                    
-                arc_headline = art.get("headline", "")
-                arc_sub_header = art.get("sub_header", "")
-                arc_content = art.get("content", "")
-                arc_date = art.get("date", "")
-                arc_image = art.get("associated_image", "")
-                
-                news_snippet = arc_content[:160] + "..." if len(arc_content) > 160 else arc_content
-                img_tag_html = f'<img src="{arc_image}" style="width:100%; max-height:150px; object-fit:cover; border-radius:4px;"/>' if arc_image else ''
-                sub_tag_html = f'<p style="color:#555; font-style:italic; font-size:14px; margin-top:2px; margin-bottom:4px;">{arc_sub_header}</p>' if arc_sub_header else ''
-                
-                st.markdown(
-                    f"""
-                    <a href="?article={file}" target="_self" class="news-card-anchor">
-                        <div class="news-clickable-box">
-                            <table style="width:100%; border-collapse:collapse; border:none;">
-                                <tr>
-                                    <td style="width:68%; vertical-align:top; border:none; padding:0; padding-right:15px;">
-                                        <h4 style="color:#000; font-weight:700; margin:0; font-size:22px; line-height:1.3;">{arc_headline}</h4>
-                                        {sub_tag_html}
-                                        <p style="color:#999; font-size:11px; margin:4px 0;">📅 తేదీ: {arc_date}</p>
-                                        <p style="font-size:15px; color:#333; margin:0; line-height:1.5;">{news_snippet}</p>
-                                    </td>
-                                    <td style="width:32%; vertical-align:top; border:none; padding:0;">
-                                        {img_tag_html}
-                                    </td>
-                                </tr>
-                            </table>
-                        </div>
-                    </a>
-                    """,
-                    unsafe_allow_html=True
-                )
-        else:
-            st.info("ప్రస్తుతానికి ఎటువంటి వార్తలు లేవు. వార్తలను జోడించడానికి అడ్మిన్ లాగిన్ ఉపయోగించండి.")
+        c_l, c_r = st.columns([0.65, 0.35], gap="large")
+        with c_l:
+            st.markdown(f"<p style='font-size:18px; line-height:1.75;'>{full_art.get('content')}</p>", unsafe_allow_html=True)
+        with c_r:
+            f_img = full_art.get('associated_image')
+            if f_img:
+                st.image(f_img, use_container_width=True)
 
-    # COLUMN B: Right Pinned Sidebar Headlines
-    with col_right_trending:
-        st.markdown("<h3 style='margin-top:0; color:#c00000; border-bottom:2px solid #c00000; padding-bottom:5px;'>🔥 ముఖ్యాంశాలు (Trending Headlines)</h3>", unsafe_allow_html=True)
-        st.write("") 
-        
-        if all_articles:
-            for side_headline, side_file in list(all_articles.items())[:6]:
-                with open(os.path.join(SAVE_FOLDER, side_file), "r", encoding="utf-8") as f:
-                    s_art = json.load(f)
-                    
-                s_head = s_art.get("headline", "")
-                s_sub = s_art.get("sub_header", "")
-                s_img = s_art.get("associated_image", "")
-                
-                img_html = f'<img src="{s_img}" style="width:100%; border-radius:4px; aspect-ratio:4/3; object-fit:cover;"/>' if s_img else ''
-                sub_html = f'<p style="font-size:11px; color:#666; margin-top:3px; margin-bottom:0; line-height:1.2;">{s_sub[:40]}...</p>' if s_sub else ''
-                
-                st.markdown(
-                    f"""
-                    <a href="?article={side_file}" target="_self" class="news-card-anchor">
-                        <div class="sidebar-clickable-card">
-                            <table style="width:100%; border-collapse:collapse; border:none;">
-                                <tr>
-                                    <td style="width:70%; vertical-align:top; border:none; padding:0; padding-right:8px;">
-                                        <p style="font-size:15px; font-weight:700; line-height:1.3; color:#111; margin:0;">{s_head}</p>
-                                        {sub_html}
-                                    </td>
-                                    <td style="width:30%; vertical-align:middle; border:none; padding:0;">
-                                        {img_html}
-                                    </td>
-                                </tr>
-                            </table>
-                        </div>
-                    </a>
-                    """,
-                    unsafe_allow_html=True
-                )
+    # ----------------------------------------------------------------
+    # MAIN PORTAL HOMEPAGE: BRANDED TOP MASTHEAD + LIVE MARQUEE SCROLL
+    # ----------------------------------------------------------------
+    else:
+        # STEP 1: Renders your real official image logo matching your exact colors and fonts
+        if os.path.exists("official_logo.png"):
+            st.image("official_logo.png", width=320)
         else:
-            st.caption("No trending headlines recorded in archives yet.")
+            # Safe text backup fallback if the image file hasn't been uploaded to GitHub yet
+            st.markdown("<h1 style='color:#0d47a1; font-size:48px; margin:0;'>డెక్కన్</h1><p style='color:#d32f2f; margin:0;'>ప్రజలకు, अधिकारियोंకు మధ్య వారధి</p>", unsafe_allow_html=True)
+            
+        # STEP 2: Renders English text token right below the real logo image
+        st.markdown("<div class='logo-english-sub'>NETIDECCAN</div>", unsafe_allow_html=True)
+        
+        # STEP 3: Single-Row Horizontal Marquee Ticker Welcome Text
+        st.markdown(
+            """
+            <div class='breaking-marquee-box'>
+                <marquee behavior='scroll' direction='left' scrollamount='6'>
+                    <span class='marquee-text-style'>
+                        🔥 నేటి డెక్కన్ వార్తలకు స్వాగతం తాజా రాజకీయ, ఆర్థిక, క్రీడా వార్తలు మీ కోసం ప్రతి క్షణం నిజమైన సమాచారం నేటి డెక్కన్ – మీ నమ్మకమైన వార్తా వేదిక.
+                    </span>
+                </marquee>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+        
+        # Control row setup
+        col_ctrl_btn, col_ctrl_search = st.columns([0.22, 0.78], gap="large")
+        with col_ctrl_btn:
+            st.link_button("📰 Read Print E-Paper", "http://netideccan.com", use_container_width=True)
+        with col_ctrl_search:
+            search_query = st.text_input("🔍 వెతకండి (Search news by headline keyword):", placeholder="Type keywords here to filter articles...", key="news_search_reader_field").strip()
+            
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        # STEP 4: Split main canvas grid layout (70% Center Main News feed, 30% Right Sidebar Feed)
+        col_center_news, col_right_trending = st.columns([0.68, 0.32], gap="large")
+        
+        # COLUMN A: Center Breaking News
+        with col_center_news:
+            st.markdown("<h3 style='margin-top:0; font-weight:800; border-bottom:2px solid #333; padding-bottom:5px;'>📰 తాజా వార్తలు (Latest News Updates)</h3>", unsafe_allow_html=True)
+            st.write("") 
+            
+            if all_articles:
+                for headline, file in all_articles.items():
+                    if search_query and search_query.lower() not in headline.lower():
+                        continue
+                        
+                    with open(os.path.join(SAVE_FOLDER, file), "r", encoding="utf-8") as f:
+                        art = json.load(f)
+                        
+                    arc_headline = art.get("headline", "")
+                    arc_sub_header = art.get("sub_header", "")
+                    arc_content = art.get("content", "")
+                    arc_date = art.get("date", "")
+                    arc_image = art.get("associated_image", "")
+                    
+                    news_snippet = arc_content[:160] + "..." if len(arc_content) > 160 else arc_content
+                    img_tag_html = f'<img src="{arc_image}" style="width:100%; max-height:150px; object-fit:cover; border-radius:4px;"/>' if arc_image else ''
+                    sub_tag_html = f'<p style="color:#555; font-style:italic; font-size:14px; margin-top:2px; margin-bottom:4px;">{arc_sub_header}</p>' if arc_sub_header else ''
+                    
+                    st.markdown(
+                        f"""
+                        <a href="?article={file}" target="_self" class="news-card-anchor">
+                            <div class="news-clickable-box">
+                                <table style="width:100%; border-collapse:collapse; border:none;">
+                                    <tr>
+                                        <td style="width:68%; vertical-align:top; border:none; padding:0; padding-right:15px;">
+                                            <h4 style="color:#000; font-weight:700; margin:0; font-size:22px; line-height:1.3;">{arc_headline}</h4>
+                                            {sub_tag_html}
+                                            <p style="color:#999; font-size:11px; margin:4px 0;">📅 తేదీ: {arc_date}</p>
+                                            <p style="font-size:15px; color:#333; margin:0; line-height:1.5;">{news_snippet}</p>
+                                        </td>
+                                        <td style="width:32%; vertical-align:top; border:none; padding:0;">
+                                            {img_tag_html}
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </a>
+                        """,
+                        unsafe_allow_html=True
+                    )
+            else:
+                st.info("ప్రస్తుతానికి ఎటువంటి వార్తలు లేవు. వార్తలను జోడించడానికి అడ్మిన్ లాగిన్ ఉపయోగించండి.")
+
+        # COLUMN B: Right Pinned Sidebar Headlines
+        with col_right_trending:
+            st.markdown("<h3 style='margin-top:0; color:#c00000; border-bottom:2px solid #c00000; padding-bottom:5px;'>🔥 ముఖ్యాంశాలు (Trending Headlines)</h3>", unsafe_allow_html=True)
+            st.write("") 
+            
+            if all_articles:
+                for side_headline, side_file in list(all_articles.items())[:6]:
+                    with open(os.path.join(SAVE_FOLDER, side_file), "r", encoding="utf-8") as f:
+                        s_art = json.load(f)
+                        
+                    s_head = s_art.get("headline", "")
+                    s_sub = s_art.get("sub_header", "")
+                    s_img = s_art.get("associated_image", "")
+                    
+                    img_html = f'<img src="{s_img}" style="width:100%; border-radius:4px; aspect-ratio:4/3; object-fit:cover;"/>' if s_img else ''
+                    sub_html = f'<p style="font-size:11px; color:#666; margin-top:3px; margin-bottom:0; line-height:1.2;">{s_sub[:40]}...</p>' if s_sub else ''
+                    
+                    st.markdown(
+                        f"""
+                        <a href="?article={side_file}" target="_self" class="news-card-anchor">
+                            <div class="sidebar-clickable-card">
+                                <table style="width:100%; border-collapse:collapse; border:none;">
+                                    <tr>
+                                        <td style="width:70%; vertical-align:top; border:none; padding:0; padding-right:8px;">
+                                            <p style="font-size:15px; font-weight:700; line-height:1.3; color:#111; margin:0;">{s_head}</p>
+                                            {sub_html}
+                                        </td>
+                                        <td style="width:30%; vertical-align:middle; border:none; padding:0;">
+                                            {img_html}
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </a>
+                        """,
+                        unsafe_allow_html=True
+                    )
+            else:
+                st.caption("No trending headlines recorded in archives yet.")
 
 # 9. FOOTER STATUS BAR MONITOR
 st.markdown("---")
