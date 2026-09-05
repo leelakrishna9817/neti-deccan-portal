@@ -330,6 +330,8 @@ else:
             st.markdown("<h3 style='margin-top:0; font-weight:800; border-bottom:2px solid #333; padding-bottom:5px;'>📰 తాజా వార్తలు (Latest News Updates)</h3>", unsafe_allow_html=True)
             st.write("") 
             
+            # Compile matches factoring both text key query words and selected category tags
+            visible_articles_count = 0
             if all_articles:
                 for headline, file in all_articles.items():
                     if search_query and search_query.lower() not in headline.lower():
@@ -338,6 +340,11 @@ else:
                     with open(os.path.join(SAVE_FOLDER, file), "r", encoding="utf-8") as f:
                         art = json.load(f)
                         
+                    art_category = art.get("category", "All News")
+                    if selected_category != "All News" and art_category != selected_category:
+                        continue
+                        
+                    visible_articles_count += 1
                     arc_headline = art.get("headline", "")
                     arc_sub_header = art.get("sub_header", "")
                     arc_content = art.get("content", "")
@@ -370,12 +377,13 @@ else:
                         """,
                         unsafe_allow_html=True
                     )
-            else:
-                st.info("ప్రస్తుతానికి ఎటువంటి వార్తలు లేవు. వార్తలను జోడించడానికి అడ్మిన్ లాగిన్ ఉపయోగించండి.")
+            
+            if visible_articles_count == 0:
+                st.info(f"ప్రస్తుతానికి '{selected_category}' విభాగంలో ఎటువంటి వార్తలు లేవు.")
 
-        # COLUMN B: Right Pinned Sidebar Headlines
+        # COLUMN C: Right Side Pinned Trending Summary Module
         with col_right_trending:
-            st.markdown("<h3 style='margin-top:0; color:#c00000; border-bottom:2px solid #c00000; padding-bottom:5px;'>🔥 ముఖ్యాంశాలు (Trending Headlines)</h3>", unsafe_allow_html=True)
+            st.markdown("<h3 style='margin-top:0; color:#c00000; border-bottom:2px solid #c00000; padding-bottom:5px;'>🔥 ముఖ్యాంశాలు</h3>", unsafe_allow_html=True)
             st.write("") 
             
             if all_articles:
@@ -388,7 +396,8 @@ else:
                     s_img = s_art.get("associated_image", "")
                     
                     img_html = f'<img src="{s_img}" style="width:100%; border-radius:4px; aspect-ratio:4/3; object-fit:cover;"/>' if s_img else ''
-                    sub_html = f'<p style="font-size:11px; color:#666; margin-top:3px; margin-bottom:0; line-height:1.2;">{s_sub[:40]}...</p>' if s_sub else ''
+                    s_sub_val = s_sub if s_sub else ""
+                    sub_html = f'<p style="font-size:11px; color:#666; margin-top:3px; margin-bottom:0; line-height:1.2;">{s_sub_val[:40]}...</p>' if s_sub_val else ''
                     
                     st.markdown(
                         f"""
