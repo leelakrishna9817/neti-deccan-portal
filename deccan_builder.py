@@ -374,7 +374,7 @@ else:
         col_left_categories, col_center_news, col_right_trending = st.columns([0.22, 0.51, 0.27], gap="medium")
         
         with col_left_categories:
-            st.markdown("<h4 style='margin-top:0; font-weight:700; color:#333; border-bottom:2px solid #ccc; padding-bottom:5px;'>📰  వార్తా వర్గాలు</h4>", unsafe_allow_html=True)
+            st.markdown("<h4 style='margin-top:0; font-weight:700; color:#333; border-bottom:2px solid #ccc; padding-bottom:5px;'>📰  வార్తా వర్గాలు</h4>", unsafe_allow_html=True)
             available_categories = {"Casual News": "📰", "Politics": "⚖️", "Sports": "🏆", "Cinema": "🎬", "International": "🌍", "National": "🇮🇳", "Business": "💼"}
             for cat_name, cat_icon in available_categories.items():
                 is_active = (selected_category == cat_name)
